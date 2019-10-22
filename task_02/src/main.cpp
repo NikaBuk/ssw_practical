@@ -7,7 +7,7 @@
 
 int main() {
     std::cout << "Ah, here we go again..." << std::endl;
-    Parse3("test.p");
+	Parse3("C:/Users/Èëüÿ/Desktop/test.p");
 
     return 0;
 }

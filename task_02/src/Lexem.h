@@ -56,6 +56,7 @@ public:
     Lexem(std::string &&t_name, tokens t_tok, int t_line) : name(t_name),
                                               token(t_tok), line(t_line) {};
 
+
     std::string GetName();
     tokens      GetToken();
     int         GetLine();
