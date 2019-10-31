@@ -45,6 +45,8 @@ enum errors {
     MUST_BE_DOT,     // Error: Must be '.'
     MUST_BE_ASS,     // Error: Must be ':='
     DUPL_ID_ERR,     // Error: Duplicate declaration on identifier
+	WRONG_VAR,		 // Error: ID not found
+	OPEN_ERR,		 // Error: File is not open
     UNKNOWN_ID,      // Error: Undefined identifier
     // TODO: Add other types of error
 };
@@ -55,7 +57,6 @@ public:
     Lexem() : name(""), token(unknown_tk), line(0) {};
     Lexem(std::string &&t_name, tokens t_tok, int t_line) : name(t_name),
                                               token(t_tok), line(t_line) {};
-
 
     std::string GetName();
     tokens      GetToken();

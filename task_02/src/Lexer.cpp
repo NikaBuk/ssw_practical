@@ -82,11 +82,12 @@ Lexem Lexer::getLex() {
                 ch = getChar();
             }
 
-            if (lex == "program")      { return Lexem(std::move(lex), program_tk, line); }
-            else if (lex == "var")     { return Lexem(std::move(lex), var_tk, line);     }
-            else if (lex == "begin")   { return Lexem(std::move(lex), begin_tk, line);   }
-            else if (lex == "integer") { return Lexem(std::move(lex), type_tk, line);    }
-            else if (lex == "end")     { return Lexem(std::move(lex), end_tk, line);     }
+            if		(lex == "program") { return Lexem(std::move(lex), program_tk,	line); }
+            else if (lex == "var")     { return Lexem(std::move(lex), var_tk,		line); }
+            else if (lex == "begin")   { return Lexem(std::move(lex), begin_tk,		line); }
+            else if (lex == "integer") { return Lexem(std::move(lex), type_tk,		line); }
+            else if (lex == "end")     { return Lexem(std::move(lex), end_tk,		line); }
+			else if (lex == "div")	   { return Lexem(std::move(lex), div_tk,		line); }
             else { // it is ID
                 return Lexem(std::move(lex), id_tk, line);
             }
@@ -101,7 +102,8 @@ Lexem Lexer::getLex() {
                 case '+' : tok = add_tk;   break;
                 case '-' : tok = sub_tk;   break;
                 case '*' : tok = mul_tk;   break;
-                case '/' : tok = div_tk;   break; // TODO: rewrite for Pascal div
+				case '(':  tok = opb_tk;   break;
+				case ')':  tok = cpb_tk;   break;
                 default: {
                     std::cerr << "<E> Unknown token " << ch << std::endl;
                     tok = unknown_tk;

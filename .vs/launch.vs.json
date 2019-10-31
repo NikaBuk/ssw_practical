@@ -1,0 +1,12 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "task_02\\CMakeLists.txt",
+      "projectTarget": "(lecs_pars) lecs_pars.exe",
+      "name": "(lecs_pars) lecs_pars.exe"
+    }
+  ]
+}

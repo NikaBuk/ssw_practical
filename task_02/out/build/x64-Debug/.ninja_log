@@ -53,3 +53,10 @@
 861	1104	593478986	lecs_pars.exe	a52f63ffcdff70ce
 0	790	593479074	CMakeFiles/lecs_pars.dir/src/Syntax.cpp.obj	e8c5b0159c08a1ce
 792	1006	593479074	lecs_pars.exe	a52f63ffcdff70ce
+31	450	594254993	CMakeFiles/lecs_pars.dir/src/Variable.cpp.obj	fab64b9f1401410e
+22	475	594254993	CMakeFiles/lecs_pars.dir/src/Lexem.cpp.obj	f12a2ac0ced82489
+15	771	594254994	CMakeFiles/lecs_pars.dir/src/Lexer.cpp.obj	6a6da5802a21b97f
+8	813	594254994	CMakeFiles/lecs_pars.dir/src/task_02.cpp.obj	2e7b7b24465754a8
+0	914	594254994	CMakeFiles/lecs_pars.dir/src/main.cpp.obj	dce26873d0ae35a0
+39	1018	594254994	CMakeFiles/lecs_pars.dir/src/Syntax.cpp.obj	34df618d96b613a
+1020	1528	594254994	lecs_pars.exe	a52f63ffcdff70ce

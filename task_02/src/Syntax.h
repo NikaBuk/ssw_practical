@@ -11,84 +11,17 @@
 #include <list>
 #include <map>
 #include <vector>
+#include <sstream>
+#include <stack>
 #include "Lexem.h"
 #include "Variable.h"
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <cassert>
-#include "task_02.h"
-#include "SynAri.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <vector>
-#include <string>
-#include "tree_t.h"
 
-struct st
-{
-	char c; struct st* next;
-};
-/* Функция push записывает на стек (на веpшину котоpого указывает HEAD)
-   символ a . Возвpащает указатель на новую веpшину стека */
-struct st* push(struct st* HEAD, char a)
-{
-	struct st* PTR;
-	/* Выделение памяти */
-	if ((PTR = new st) == NULL)
-	{
-		/* Если её нет - выход */
-		puts("Нет памяти"); exit(-1);
-	}
-	/* Инициализация созданной веpшины */
-	PTR->c = a;
-	/* и подключение её к стеку */
-	PTR->next = HEAD;
-	/* PTR -новая веpшина стека */
-	return PTR;
-}
-
-/* Функция DEL удаляет символ с веpшины стека.
-   Возвpащает удаляемый символ.
-   Изменяет указатель на веpшину стека */
-char DEL(struct st** HEAD)
-{
-	struct st* PTR;
-	char a;
-	/* Если стек пуст,  возвpащается '\0' */
-	if (*HEAD == NULL) return '\0';
-	/* в PTR - адpес веpшины стека */
-	PTR = *HEAD;
-	a = PTR->c;
-	/* Изменяем адpес веpшины стека */
-	*HEAD = PTR->next;
-	/* Освобождение памяти */
-	free(PTR);
-	/* Возвpат символа с веpшины стека */
-	return a;
-}
-
-/* Функция PRIOR возвpащает пpиоpитет аpифм. опеpации */
-int PRIOR(char a)
-{
-	switch (a)
-	{
-	case '*':
-	case '/':
-		return 3;
-
-	case '-':
-	case '+':
-		return 2;
-
-	case '(':
-		return 1;
-	}
-}
-
-
-
+typedef struct tree_t {  // TODO: Here you have to rewrite to OOP
+    tree_t *left_node;
+    tree_t *rigth_node;
+    tree_t *parent_node; // XXX: Should we have/use link to parent node?
+    std::string value;
+} tree_t;
 
 class Syntax {
 public:
@@ -96,6 +29,21 @@ public:
 	int ParseCode();
 	~Syntax();
 	tree_t getPascal_tree();
+	void create_tree(tree_t** s_tree, std::string& str);
+
+	std::string valueOfID(std::string tmp);
+
+
+	bool isNumeric(const std::string& some);
+	std::string::iterator find_first_in_brakes_helper(std::string& some, const char first, const char second);
+	std::pair<std::pair<std::string, std::string>, bool> find_first_in_brakes(std::string& some, const char first, const char second);
+	std::string::const_iterator find_first_without_brakes_helper(const std::string& some, const char first, const char second);
+	std::pair<std::pair<std::string, std::string>, bool> find_first_without_brakes(const std::string& some, const char first, const char second);
+	tree_t* genNode(std::string c);
+	std::pair<std::string, std::string> create_tree_helper_1(tree_t** s_tree, std::string& str);
+	std::pair<std::string, std::string> create_tree_helper_2(tree_t** s_tree, std::string& str);
+	bool lays_check(const std::string& str);
+	int toInt(const std::string& some);
 private:
 	using lex_it = std::vector<Lexem>::iterator; // alias of vector iterator
 	lex_it                          cursor;
@@ -108,13 +56,13 @@ private:
 
 	tree_t* buildTreeStub(tree_t* t_tree, const std::string& node_name);
 	tree_t* createNode(const std::string& node_name);
+	tree_t* expressionParse(lex_it& t_iter, std::string tmp = "", tree_t** t_tree = nullptr);
 
-	std::pair<int,tree_t*>  expressionParse(lex_it& t_iter, std::string tmp = "");
-	int   stateParse(lex_it& t_iter);
-	int   compoundParse(lex_it& t_iter);
+	tree_t* stateParse(lex_it& t_iter, tree_t** t_tree);
+	tree_t* compoundParse(lex_it& t_iter, tree_t* t_tree);
 	int   vardpParse(lex_it& t_iter, tree_t* t_tree);
 	std::list<std::string> vardParse(lex_it& t_iter);
-	int   blockParse(lex_it& t_iter);
+	int   blockParse(lex_it& t_iter, tree_t* t_tree);
 	int   programParse(lex_it& t_iter);
 
 	void printError(errors t_err, Lexem lex);
@@ -126,7 +74,9 @@ private:
 
 	void createVarTree(tree_t* t_tree, tree_t* t_donor_tree, int lvl);
 	void freeTreeNode(tree_t*& t_tree);
+
+	
+	
 };
-
-
 #endif //LECS_PARS_SYNTAX_H
+
