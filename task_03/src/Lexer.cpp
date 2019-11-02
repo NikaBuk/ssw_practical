@@ -1,3 +1,7 @@
+//
+// Created by vovan on 28.09.2019.
+//
+
 #include "Lexer.h"
 
 
@@ -81,6 +85,7 @@ Lexem Lexer::getLex() {
                 lex += ch;
                 ch = getChar();
             }
+
             if (lex == "program")      { return Lexem(std::move(lex), program_tk, line); }
             else if (lex == "var")     { return Lexem(std::move(lex), var_tk, line);     }
             else if (lex == "begin")   { return Lexem(std::move(lex), begin_tk, line);   }
@@ -100,8 +105,7 @@ Lexem Lexer::getLex() {
                 case '+' : tok = add_tk;   break;
                 case '-' : tok = sub_tk;   break;
                 case '*' : tok = mul_tk;   break;
-				case '(':  tok = opb_tk;   break;
-				case ')':  tok = cpb_tk;   break;
+                case '/' : tok = div_tk;   break;
                 default: {
                     std::cerr << "<E> Unknown token " << ch << std::endl;
                     tok = unknown_tk;
