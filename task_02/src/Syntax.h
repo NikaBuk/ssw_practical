@@ -81,4 +81,3 @@ private:
 	
 };
 #endif //LECS_PARS_SYNTAX_H
-
