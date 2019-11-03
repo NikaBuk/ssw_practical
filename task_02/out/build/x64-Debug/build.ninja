@@ -39,42 +39,42 @@ include rules.ninja
 build cmake_object_order_depends_target_lecs_pars: phony || CMakeFiles\lecs_pars.dir
 
 build CMakeFiles\lecs_pars.dir\src\main.cpp.obj: CXX_COMPILER__lecs_pars ..\..\..\src\main.cpp || cmake_object_order_depends_target_lecs_pars
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   -std:c++14
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   OBJECT_DIR = CMakeFiles\lecs_pars.dir
   OBJECT_FILE_DIR = CMakeFiles\lecs_pars.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\lecs_pars.dir\
   TARGET_PDB = lecs_pars.pdb
 
 build CMakeFiles\lecs_pars.dir\src\task_02.cpp.obj: CXX_COMPILER__lecs_pars ..\..\..\src\task_02.cpp || cmake_object_order_depends_target_lecs_pars
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   -std:c++14
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   OBJECT_DIR = CMakeFiles\lecs_pars.dir
   OBJECT_FILE_DIR = CMakeFiles\lecs_pars.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\lecs_pars.dir\
   TARGET_PDB = lecs_pars.pdb
 
 build CMakeFiles\lecs_pars.dir\src\Lexer.cpp.obj: CXX_COMPILER__lecs_pars ..\..\..\src\Lexer.cpp || cmake_object_order_depends_target_lecs_pars
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   -std:c++14
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   OBJECT_DIR = CMakeFiles\lecs_pars.dir
   OBJECT_FILE_DIR = CMakeFiles\lecs_pars.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\lecs_pars.dir\
   TARGET_PDB = lecs_pars.pdb
 
 build CMakeFiles\lecs_pars.dir\src\Syntax.cpp.obj: CXX_COMPILER__lecs_pars ..\..\..\src\Syntax.cpp || cmake_object_order_depends_target_lecs_pars
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   -std:c++14
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   OBJECT_DIR = CMakeFiles\lecs_pars.dir
   OBJECT_FILE_DIR = CMakeFiles\lecs_pars.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\lecs_pars.dir\
   TARGET_PDB = lecs_pars.pdb
 
 build CMakeFiles\lecs_pars.dir\src\Lexem.cpp.obj: CXX_COMPILER__lecs_pars ..\..\..\src\Lexem.cpp || cmake_object_order_depends_target_lecs_pars
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   -std:c++14
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   OBJECT_DIR = CMakeFiles\lecs_pars.dir
   OBJECT_FILE_DIR = CMakeFiles\lecs_pars.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\lecs_pars.dir\
   TARGET_PDB = lecs_pars.pdb
 
 build CMakeFiles\lecs_pars.dir\src\Variable.cpp.obj: CXX_COMPILER__lecs_pars ..\..\..\src\Variable.cpp || cmake_object_order_depends_target_lecs_pars
-  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1   -std:c++14
+  FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
   OBJECT_DIR = CMakeFiles\lecs_pars.dir
   OBJECT_FILE_DIR = CMakeFiles\lecs_pars.dir\src
   TARGET_COMPILE_PDB = CMakeFiles\lecs_pars.dir\
@@ -130,6 +130,11 @@ build lecs_pars: phony lecs_pars.exe
 
 # =============================================================================
 # Folder targets.
+
+# =============================================================================
+# Unknown Build Time Dependencies.
+# Tell Ninja that they may appear as side effects of build rules
+# otherwise ordered by order-only dependencies.
 
 # =============================================================================
 # Built-in targets

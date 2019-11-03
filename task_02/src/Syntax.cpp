@@ -26,7 +26,7 @@
  * <id>          ::= a-z
  * <constant>    ::= 0-9
  */
-
+bool flagEr = false;
 Syntax::Syntax(std::vector<Lexem>&& t_lex_table) {
 	if (t_lex_table.empty())
 		throw std::runtime_error("<E> Syntax: Lexemes table is empty");
@@ -138,11 +138,12 @@ int Syntax::blockParse(lex_it& t_iter, tree_t* t_tree) {
 		}
 		case begin_tk: {
 			pascal_tree->rigth_node = buildTreeStub(pascal_tree, iter->GetName());
-			pascal_tree->rigth_node->rigth_node = compoundParse(t_iter, pascal_tree->rigth_node->rigth_node);
+			pascal_tree->rigth_node->rigth_node = compoundParse(t_iter);
+			 
 			break;
 		}
 		case dot_tk: {
-			std::cout << "Program was parse successfully" << std::endl;
+			flagEr==false ? std::cout << "Program was parse successfully" << std::endl : std::cout << "Program was parse with error(s)" << std::endl;
 			break;
 		}
 		default: {
@@ -243,14 +244,14 @@ std::list<std::string> Syntax::vardParse(lex_it& t_iter) {
  * @return  EXIT_SUCCESS - if compound part is matched to grammar
  * @return -EXIT_FAILURE - if compound part doesn't matched to grammar
  */
-tree_t* Syntax::compoundParse(lex_it& t_iter, tree_t* t_tree) {
+tree_t* Syntax::compoundParse(lex_it& t_iter) {
 	static int compound_count = 0; // XXX: How can this be replaced?
-	static tree_t** tmpTree = &t_tree;
+	tree_t* t_tree = new tree_t;
 	compound_count++;
 	int state_count = 0;
 	std::string op = "op";
 	op = op + std::to_string(compound_count) + "_" + std::to_string(state_count + 1);
-	t_tree = buildTreeStub(t_tree, op);	 
+	t_tree = buildTreeStub(t_tree, op);
 	while (t_iter->GetToken() != end_tk) {
 		if (t_iter->GetToken() == eof_tk) {
 			printError(EOF_ERR, *t_iter);
@@ -264,7 +265,7 @@ tree_t* Syntax::compoundParse(lex_it& t_iter, tree_t* t_tree) {
 			t_tree = t_tree->rigth_node;
 		}
 
-		stateParse(t_iter,&t_tree->left_node);
+		stateParse(t_iter, &t_tree->left_node);
 	}
 
 	if (compound_count == 1) { // XXX: How can this be replaced?
@@ -274,7 +275,8 @@ tree_t* Syntax::compoundParse(lex_it& t_iter, tree_t* t_tree) {
 			return nullptr;
 		}
 	}
-	t_tree->value = "end";
+	t_tree->ChangeValue("end");
+	//not yet come up with how else to come to the head of the tree
 	while (t_tree->value[t_tree->value.size() - 1] != '1') {
 		t_tree = t_tree->parent_node;
 	}
@@ -291,9 +293,10 @@ tree_t* Syntax::compoundParse(lex_it& t_iter, tree_t* t_tree) {
  */
 tree_t* Syntax::stateParse(lex_it& t_iter, tree_t** t_tree) {
 	auto iter = getNextLex(t_iter);
-	std::string tmpS;
+	
 	switch (iter->GetToken()) {
 	case id_tk: {
+		std::string tmpS;
 		if (!isVarExist(iter->GetName())) {
 			printError(UNKNOWN_ID, *t_iter);
 			return nullptr;
@@ -306,7 +309,7 @@ tree_t* Syntax::stateParse(lex_it& t_iter, tree_t** t_tree) {
 		}
 		*t_tree = buildTreeStub(*t_tree, ":=");
 		(*t_tree)->left_node = buildTreeStub(*t_tree, tmpS);
-		(*t_tree)->rigth_node = expressionParse(t_iter,"", &(*t_tree)->rigth_node);
+		expressionParse(t_iter,"", &(*t_tree)->rigth_node);
 		if (!checkLexem(t_iter, semi_tk)) { // we exit from expression on the ';'
 			printError(MUST_BE_SEMI, *t_iter);
 			return nullptr;
@@ -315,7 +318,7 @@ tree_t* Syntax::stateParse(lex_it& t_iter, tree_t** t_tree) {
 	}
 	case begin_tk: {
 		*t_tree = buildTreeStub(*t_tree, "begin");
-		(*t_tree)->rigth_node = compoundParse(t_iter,(*t_tree)->rigth_node);
+		(*t_tree)->rigth_node = compoundParse(t_iter);
 		getNextLex(t_iter);
 		if (!checkLexem(t_iter, semi_tk)) {
 			printError(MUST_BE_SEMI, *t_iter);
@@ -342,19 +345,20 @@ tree_t* Syntax::stateParse(lex_it& t_iter, tree_t** t_tree) {
 tree_t* Syntax::expressionParse(lex_it& t_iter,std::string tmp, tree_t** t_tree) {
 	auto iter = getNextLex(t_iter);
 	static std::string k = "";
+	static std::string tmpK;
 	static bool flagl = false;
+	static bool flagN = false;
 	switch (iter->GetToken()) {
 	case id_tk: {
 		if (!isVarExist(iter->GetName()))
 			printError(UNKNOWN_ID, *t_iter);
-		if (valueOfID(iter->GetName()) == "")
+		/*if (valueOfID(iter->GetName()) == "")
 			return nullptr;
+		else
+			k += valueOfID(iter->GetName());*/
 	}
 	case constant_tk: {
-		if(iter->GetToken() == id_tk)
-			k += valueOfID(iter->GetName());
-		else if (iter->GetToken() == constant_tk)
-			k += iter->GetName();
+		k += iter->GetName();
 		iter = getNextLex(t_iter);
 		if (iter->GetName() == ";" && flagl == false)
 		{
@@ -372,7 +376,7 @@ tree_t* Syntax::expressionParse(lex_it& t_iter,std::string tmp, tree_t** t_tree)
 			else
 				k += iter->GetName();
 			flagl = true;
-			expressionParse(t_iter, k,t_tree);
+			expressionParse(t_iter, k, t_tree);
 			break;
 		}
 		default: { 
@@ -380,7 +384,7 @@ tree_t* Syntax::expressionParse(lex_it& t_iter,std::string tmp, tree_t** t_tree)
 		}
 		}
 
-		break;
+		return nullptr;
 	}
 	case sub_tk: {
 		k += iter->GetName();
@@ -389,9 +393,42 @@ tree_t* Syntax::expressionParse(lex_it& t_iter,std::string tmp, tree_t** t_tree)
 			iter = getNextLex(t_iter);
 			iter = getNextLex(t_iter);
 			k += tmps.GetName();
+			tmpK = k;
+			k = "1";
+			k += iter->GetName();
+			flagN = true;
+			expressionParse(t_iter, k,t_tree);
+			break;
+		}
+		break;
+	}
+	case opb_tk: {
+		k += iter->GetName();
+		expressionParse(t_iter, k);
+		k += t_iter->GetName();
+		iter = getNextLex(t_iter);
+		if (iter->GetName() == ";" && flagl == false)
+		{
 			*t_tree = createNode(k);
 			k = "";
 			return *t_tree;
+		}
+		switch (iter->GetToken()) {
+		case add_tk:
+		case sub_tk:
+		case mul_tk:
+		case div_tk: {
+			if (iter->GetToken() == div_tk)
+				k += "/";
+			else
+				k += iter->GetName();
+			flagl = true;
+			expressionParse(t_iter, k, t_tree);
+			break;
+		}
+		default: {
+			break;
+		}
 		}
 		break;
 	}
@@ -406,6 +443,9 @@ tree_t* Syntax::expressionParse(lex_it& t_iter,std::string tmp, tree_t** t_tree)
 		create_tree(t_tree, k);
 		k = "";
 		flagl = false;
+		if (flagN) 
+			(*t_tree)->left_node->value = tmpK;
+		flagN = false;
 		return *t_tree;
 	}
 	return *t_tree;
@@ -453,6 +493,7 @@ tree_t* Syntax::createNode(const std::string& node_name) {
  * @return none
  */
 void Syntax::printError(errors t_err, Lexem lex) {
+	flagEr = true;
 	switch (t_err) {
 	case UNKNOWN_LEXEM: {
 		std::cerr << "<E> Lexer: Get unknown lexem '" << lex.GetName()
@@ -505,6 +546,12 @@ void Syntax::printError(errors t_err, Lexem lex) {
 		std::cerr << "<E> Syntax: variable not found" << std::endl;
 		break;
 	}
+	case MUST_BE_CPD: {
+		std::cerr << "<E> Syntax: Must be ')' instead" << lex.GetName()
+			<< "' on " << lex.GetLine() << " line" << std::endl;
+		break;
+	}
+
 					// TODO: Add remaining error types
 	default: {
 		std::cerr << "<E> Syntax: Undefined type of error" << std::endl;
@@ -764,16 +811,6 @@ std::pair<std::pair<std::string, std::string>, bool> Syntax::find_first_without_
 	return std::make_pair(std::make_pair(res, end), true);
 }
 
-tree_t* Syntax::genNode(std::string c)
-{
-	auto* tree = new tree_t{};
-	tree->value = c;
-	//tree->tk = static_cast<tokens>(c);
-	tree->left_node = nullptr;
-	tree->rigth_node = nullptr;
-	tree->parent_node = nullptr;
-	return tree;
-}
 
 std::pair<std::string, std::string> Syntax::create_tree_helper_1(tree_t** s_tree, std::string& str)
 {
@@ -794,7 +831,7 @@ std::pair<std::string, std::string> Syntax::create_tree_helper_1(tree_t** s_tree
 			{
 				c = left[left.size() - 1];
 				std::string tmps{ c };
-				*s_tree = genNode(tmps);
+				*s_tree = createNode(tmps);
 				//*s_tree = new Tree<Token>::Node(Token(static_cast<Token::Type>(c), 0));
 				left.resize(left.size() - 1);
 			}
@@ -802,13 +839,13 @@ std::pair<std::string, std::string> Syntax::create_tree_helper_1(tree_t** s_tree
 			std::cout << '\n';
 			if (isNumeric(left))
 			{
-				(*s_tree)->left_node = genNode(left);
+				(*s_tree)->left_node = createNode(left);
 				//(*s_tree)->left_node = new Tree<Token>::Node(Token(Token::number, toInt(left)));
 				left.clear();
 			}
 			if (isNumeric(right))
 			{
-				(*s_tree)->rigth_node = genNode(right);
+				(*s_tree)->rigth_node = createNode(right);
 				//(*s_tree)->rigth_node = new Tree<Token>::Node(Token(Token::number, toInt(right)));
 				right.clear();
 			}
@@ -840,7 +877,7 @@ std::pair<std::string, std::string> Syntax::create_tree_helper_2(tree_t** s_tree
 			{
 				c = left[left.size() - 1];
 				std::string tmps{ c };
-				*s_tree = genNode(tmps);
+				*s_tree = createNode(tmps);
 				//*s_tree = new Tree<Token>::Node(Token(static_cast<Token::Type>(c), 0));
 				left.resize(left.size() - 1);
 			}
@@ -848,13 +885,13 @@ std::pair<std::string, std::string> Syntax::create_tree_helper_2(tree_t** s_tree
 			std::cout << '\n';
 			if (isNumeric(left))
 			{
-				(*s_tree)->left_node = genNode(left);
+				(*s_tree)->left_node = createNode(left);
 				//(*s_tree)->left_node = new Tree<Token>::Node(Token(Token::number, toInt(left)));
 				left.clear();
 			}
 			if (isNumeric(right))
 			{
-				(*s_tree)->rigth_node = genNode(right);
+				(*s_tree)->rigth_node = createNode(right);
 				//(*s_tree)->rigth_node = new Tree<Token>::Node(Token(Token::number, toInt(right)));
 				right.clear();
 			}
@@ -905,4 +942,7 @@ std::string Syntax::valueOfID(std::string tmp)
 		return "";
 }
 
-
+void tree_t::ChangeValue(const std::string& s)
+{
+	this->value = s;
+}

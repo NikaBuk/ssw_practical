@@ -29,6 +29,7 @@ enum tokens {
     div_tk,             // '/'
     opb_tk,             // '('
     cpb_tk,             // ')'
+	negnum_tk,			// '-x'
 
     eof_tk
 };
@@ -48,9 +49,10 @@ enum errors {
 	WRONG_VAR,		 // Error: ID not found
 	OPEN_ERR,		 // Error: File is not open
     UNKNOWN_ID,      // Error: Undefined identifier
+	MUST_BE_CPD,
+
     // TODO: Add other types of error
 };
-
 
 class Lexem {
 public:

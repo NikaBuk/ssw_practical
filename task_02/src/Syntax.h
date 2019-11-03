@@ -21,6 +21,7 @@ typedef struct tree_t {  // TODO: Here you have to rewrite to OOP
     tree_t *rigth_node;
     tree_t *parent_node; // XXX: Should we have/use link to parent node?
     std::string value;
+	void ChangeValue(const std::string& s);
 } tree_t;
 
 class Syntax {
@@ -28,6 +29,7 @@ public:
 	explicit Syntax(std::vector<Lexem>&& t_lex_table);
 	int ParseCode();
 	~Syntax();
+
 	tree_t getPascal_tree();
 	void create_tree(tree_t** s_tree, std::string& str);
 
@@ -39,11 +41,11 @@ public:
 	std::pair<std::pair<std::string, std::string>, bool> find_first_in_brakes(std::string& some, const char first, const char second);
 	std::string::const_iterator find_first_without_brakes_helper(const std::string& some, const char first, const char second);
 	std::pair<std::pair<std::string, std::string>, bool> find_first_without_brakes(const std::string& some, const char first, const char second);
-	tree_t* genNode(std::string c);
 	std::pair<std::string, std::string> create_tree_helper_1(tree_t** s_tree, std::string& str);
 	std::pair<std::string, std::string> create_tree_helper_2(tree_t** s_tree, std::string& str);
 	bool lays_check(const std::string& str);
-	int toInt(const std::string& some);
+	tree_t* createNode(const std::string& node_name);
+	//int GetErrorCount();
 private:
 	using lex_it = std::vector<Lexem>::iterator; // alias of vector iterator
 	lex_it                          cursor;
@@ -55,11 +57,11 @@ private:
 	lex_it peekLex(int N, lex_it t_iter);
 
 	tree_t* buildTreeStub(tree_t* t_tree, const std::string& node_name);
-	tree_t* createNode(const std::string& node_name);
+	
 	tree_t* expressionParse(lex_it& t_iter, std::string tmp = "", tree_t** t_tree = nullptr);
 
 	tree_t* stateParse(lex_it& t_iter, tree_t** t_tree);
-	tree_t* compoundParse(lex_it& t_iter, tree_t* t_tree);
+	tree_t* compoundParse(lex_it& t_iter);
 	int   vardpParse(lex_it& t_iter, tree_t* t_tree);
 	std::list<std::string> vardParse(lex_it& t_iter);
 	int   blockParse(lex_it& t_iter, tree_t* t_tree);
