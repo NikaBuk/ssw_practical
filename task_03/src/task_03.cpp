@@ -22,13 +22,20 @@
  * Given grammar:
  * <Soft>        ::= program <id> ; <block> .
  * <block>       ::= <var part> <state part>
- * <var part>    ::= var <var dec> : <type> ;
+ * <var part>    ::= var <var dec> : <type> [ = <exp> ] ;
  * <var dec>     ::= <id> { , <var dec> }
  * <state part>  ::= <compound>
  * <compound>    ::= begin <state> { ; <state> } end
- * <state>       ::= <assign> | <compound> | <your_other_operations>
+ * <state>       ::= <assign> | <compound> | <condoper> |
+ * <cond_oper>   ::= <logical_expr> then <compound> [ else <compund> ]
+ * <logical_expr>::= <sing_logic_expr>
+ * <sing_logic_expr> ::= <logic_term> | <sing_logic_expr> or <logic_term>
+ * <logic_term>  ::= <logic_mult> | <logic_term> and <logic_mult>
+ * <logic_mult>  ::= <logic_const> | <logic_id> | not <logic_mult> | (<logic_expr>)
+ * <logic_string_relation> ::= <id>|<exp>|<constant> <logic_op> <id>|<exp>|<constant>
+ * <logic_op>    ::= = | <> | <= | < | >= | >
  * <assign>      ::= <id> := <exp> ;
- * <exp>         ::= <id> | <constant>
+ * <exp>         ::= <id> | <constant> | <your_other_operations>
  * <type>        ::= integer
  * <id>          ::= a-z
  * <constant>    ::= 0-9

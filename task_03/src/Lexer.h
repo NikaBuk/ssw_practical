@@ -24,9 +24,13 @@ private:
     char               cursor  { -1 };
     int                line    { 1 };
     std::vector<Lexem> lex_table;
+    int i{ 0 };
 
+    void incI();
     Lexem getLex();
     char  getChar();
+    char  peekChar(int n);
+    Lexem peekLex(int n);
 
     inline char getCurrentCurs() {
         return cursor;

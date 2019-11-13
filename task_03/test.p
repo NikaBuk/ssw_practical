@@ -1,14 +1,9 @@
 program task03;
     var
-        b : integer;
+        b : array [0..9] of integer;
         a, d : integer;
     begin
-        begin
-            a := 23 + 2 * 3 - 1;
-        end;
-        begin
-            begin
-                b := 3;
-            end;
-        end;
+		for a:=0 to 5 do
+			if a = 3 then
+				break;
     end.

@@ -9,10 +9,12 @@
 
 class Variable {
 public:
-    explicit Variable(std::string t_type, std::string t_value) : type(t_type),
-                                                                 value(t_value) {};
+    explicit Variable(std::string t_type, std::string t_value,
+                      bool t_flagArray) : type(t_type),
+        value(t_value), flagArray(t_flagArray) {};
     std::string type;
     std::string value;
+    bool flagArray{ false };
 };
 
 

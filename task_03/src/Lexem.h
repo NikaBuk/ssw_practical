@@ -15,7 +15,7 @@ enum tokens {
     begin_tk,           // 'begin'
     end_tk,             // 'end'
     type_tk,            // 'type'
-    id_tk       = 8,    // any [aA-zZ][0-9]
+    id_tk = 8,          // any [aA-zZ][0-9]
     constant_tk = 9,    // 0-9
     dot_tk,             // '.'
     comma_tk,           // ','
@@ -25,10 +25,33 @@ enum tokens {
     ass_tk,             // ':='
     add_tk,             // '+'
     sub_tk,             // '-'
+    negnum_tk,          // '-[0-9]'
     mul_tk,             // '*'
     div_tk,             // '/'
     opb_tk,             // '('
     cpb_tk,             // ')'
+    xor_tk,             // 'xor'
+    or_tk,              // 'or'
+    and_tk,             // 'and'
+    not_tk,             // 'not'
+    less_tk,            // '<'
+    more_tk,            // '>'
+    lequ_tk,            // '<='
+    mequ_tk,            // '>='
+    newton_tk,          // '<>'
+    if_tk,              // 'if'
+    for_tk,             // 'for'
+    array_tk,           // 'array'
+    then_tk,            // 'then'
+    else_tk,            // 'else'
+    to_tk,              // 'to'
+    do_tk,              // 'do'
+    downto_tk,          // 'downto'
+    while_tk,           // 'while'
+    of_tk,              // 'of'
+    osb_tk,             // '['
+    csb_tk,             // ']'
+    break_tk,           // 'break'
 
     eof_tk              // end of file
 };
@@ -53,7 +76,7 @@ class Lexem {
 public:
     Lexem() : name(""), token(unknown_tk), line(0) {};
     Lexem(std::string &&t_name, tokens t_tok, int t_line) : name(t_name),
-                                              token(t_tok), line(t_line) {};
+        token(t_tok), line(t_line) {};
 
     std::string GetName();
     tokens      GetToken();

@@ -85,7 +85,9 @@ public:
                   << this->left
                   << ((this->left == nullptr) ? "\t\t\t " : "\t ")
                   << this->right << std::endl;
+
         if (this->left != nullptr) this->left->PrintTree();
+
         if (this->right != nullptr) this->right->PrintTree();
     }
 
@@ -100,6 +102,7 @@ public:
     static Tree *CreateNode(const std::string &val) {
         auto *node = new Tree(val);
         return node;
+
     }
 
 
@@ -131,7 +134,9 @@ public:
     static void FreeTree(Tree *&t_tree) {
         try {
             if (t_tree->left  != nullptr) FreeTree(t_tree->left);
+
             if (t_tree->right != nullptr) FreeTree(t_tree->right);
+
             delete t_tree;
             t_tree = nullptr;
         } catch (const std::exception &exp) {
@@ -153,7 +158,9 @@ private:
 
     void FreeTree() {
         if (this->left  != nullptr) this->left->FreeTree();
+
         if (this->right != nullptr) this->right->FreeTree();
+
         parent = nullptr;
         value  = "";
         alloc  = false;
