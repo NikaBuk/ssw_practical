@@ -36,3 +36,5 @@ tokens Lexem::GetToken() {
 int Lexem::GetLine() {
     return line;
 }
+
+
