@@ -559,15 +559,17 @@ Tree* Syntax::stateParse(lex_it &t_iter, const std::string& opValue) {
 			else
 				(if_tree->GetRightNode())->AddLeftTree(stateParse(t_iter, ""));
 
-			getNextLex(t_iter);
+			//getNextLex(t_iter);
 
             if (t_iter->GetToken() != semi_tk) {
                 printError(MUST_BE_SEMI,*t_iter);
 				return nullptr;
             }
 
-			if (peekLex(1, t_iter)->GetToken() == else_tk)
+			if (peekLex(1, t_iter)->GetToken() == else_tk) {
+				getNextLex(t_iter);
 				(if_tree->GetRightNode())->AddRightTree(stateParse(t_iter, ""));
+			}
 
             if (t_iter->GetToken() != semi_tk) {
                 printError(MUST_BE_SEMI,*t_iter);
@@ -646,7 +648,7 @@ Tree* Syntax::stateParse(lex_it &t_iter, const std::string& opValue) {
         case break_tk: {
             Tree* break_tree = Tree::CreateNode(t_iter->GetName());
             break_tree->AddRightNode(valueTreeForBreakTree);
-
+			getNextLex(t_iter);
             result_tree = break_tree;
 
             break;
@@ -695,7 +697,14 @@ int Syntax::expressionParse(lex_it &t_iter, Tree **tree) {
 				expressionParse(t_iter, &tmpTreeForResult);
 				tmpTreeForResult->ChangeValue("$");
 				(*tree)->AddRightTree(tmpTreeForResult);
-				getNextLex(t_iter);
+				//error must be ']'
+				auto* tmp_tree = new Tree;
+				tmp_tree->ChangeValue(":=");
+				if (t_iter->GetToken() != semi_tk) {
+					simplExprParseForTree((*tree)->GetRightNode(),t_iter,&tmp_tree);
+					(*tree) = tmp_tree;
+				}
+				//getNextLex(t_iter);
 				break;
 			}
             var_iter = iter; // save variable/constant value
