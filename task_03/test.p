@@ -1,9 +1,7 @@
 program task03;
     var
         b : array [0..9] of integer;
-        a, d : integer;
+        a, d, i : integer;
     begin
-		for a:=0 to 5 do
-			if a = 3 then
-				break;
+		b [1+(-3) * 2 + 3 - 2 div 3]:= (-((-11)+(-7)))*3;
     end.

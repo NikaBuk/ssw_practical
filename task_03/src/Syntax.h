@@ -36,12 +36,12 @@ private:
     lex_it peekLex(int N, lex_it t_iter);
 
 
-    int   expressionParse            (lex_it &t_iter, Tree *tree);
+    int   expressionParse            (lex_it &t_iter, Tree **tree);
     Tree  *simplExprParse            (lex_it &var_iter, lex_it &t_iter,
                                       Tree *tree);
 
     Tree  *simplExprParseForTree     (Tree* treeCPB, lex_it &t_iter,
-                                      Tree* tree);
+                                      Tree** tree);
 
     Tree* boolExprParse              (lex_it& t_iter, Tree* tree);//???
 
@@ -58,8 +58,8 @@ private:
     void updateVarTypes(const std::list<std::string> &t_var_list,
                         const std::string &t_type_name);
 
-    void updateVarValue(const std::string& name, const std::string& value);
-
+    //void updateVarValue(const std::string& name, const std::string& value);
+	void updateVarValue(const std::string& name, const std::string& value, int& firstValue,int& secondValue);
     void buildVarTree  (const std::list<std::string> &t_var_list, Tree *t_tree);
 
     void createVarTree(Tree *t_tree, Tree *t_donor_tree, int lvl);

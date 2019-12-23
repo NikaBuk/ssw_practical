@@ -69,6 +69,15 @@ enum errors {
     MUST_BE_ASS,     // Error: Must be ':='
     DUPL_ID_ERR,     // Error: Duplicate declaration on identifier
     UNKNOWN_ID,      // Error: Undefined identifier
+    MUST_BE_OSB,  // ERROR: MUST BE '['
+    INVALID_RANGE_OF_ARRAY, // ERROR: INVALID RANGE LIKE 3..2
+    MUST_BE_CSB,      //ERROR: MUST BE ']'
+    MUST_BE_OF,       //ERROR: MUST BE 'OF'
+    MUST_BE_ONE_ID_ARRAY,   //ERROR: MUST BE ONE ID OF ARRAY
+    WRONG_TYPE_MUST_BE_INTEGER, //ERROR: ERROR TYPE MUST BE INTEGER
+    MUST_BE_THEN,           //ERROR: MUST BE 'THEN'
+    MUST_BE_OPERATOR_GE_OR_LE,  //ERROR: MUST BE '<=' OR '>='
+    MUST_BE_DO			//ERROR: MUST BE 'DO'
 };
 
 

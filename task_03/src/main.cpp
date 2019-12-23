@@ -7,8 +7,8 @@
 
 
 int main() {
-    std::cout << "Okey, okey, I get it" << std::endl;
+    std::cout << "task02 run..." << std::endl;
     Parse3("C:/Users/Èëüÿ/source/repos/NikaBuk/ssw_practical3/task_03/test.p");
-
+	std::cout << "COMPLETED" << std::endl;
     std::getchar();
 }

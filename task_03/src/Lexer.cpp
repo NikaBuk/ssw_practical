@@ -190,18 +190,6 @@ Lexem Lexer::getLex() {
                     break;
 
                 case '-': {
-                    if (i - 2 < lex_table.size())
-                        if (lex_table[lex_table.size() - 1].GetToken() != id_tk
-                                && lex_table[lex_table.size() - 1].GetToken() != constant_tk) {
-                            auto tmp = getLex();
-                            tmp = getLex();
-                            lex = "-" + tmp.GetName();
-
-                            if (tmp.GetToken() == constant_tk || tmp.GetToken() == id_tk) {
-                                return Lexem(std::move(lex), negnum_tk, line);
-                            }
-                        }
-
                     tok = sub_tk;
 
                     break;
