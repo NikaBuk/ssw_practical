@@ -43,6 +43,7 @@ private:
     Tree  *simplExprParseForTree     (Tree* treeCPB, lex_it &t_iter,
                                       Tree** tree);
 
+    Tree* Find_$_end_remove_tree(Tree *tree);
     Tree* boolExprParse              (lex_it& t_iter, Tree* tree);//???
 
     Tree* stateParse                 (lex_it &t_iter, const std::string& opValue);
@@ -59,7 +60,7 @@ private:
                         const std::string &t_type_name);
 
     //void updateVarValue(const std::string& name, const std::string& value);
-	void updateVarValue(const std::string& name, const std::string& value, int& firstValue,int& secondValue);
+    void updateVarValue(const std::string& name, const std::string& value, int& firstValue,int& secondValue);
     void buildVarTree  (const std::list<std::string> &t_var_list, Tree *t_tree);
 
     void createVarTree(Tree *t_tree, Tree *t_donor_tree, int lvl);

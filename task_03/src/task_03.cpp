@@ -46,6 +46,11 @@ int Parse3(const std::string& file_path) {
     Lexer lex(file_path.c_str());
     auto table = lex.ScanCode();
 
+    if(table[0].GetToken() == eof_tk) {
+        std::cout<<"There is a one token - EOF"<<std::endl;
+        return -1;
+    }
+
     Syntax syntx(std::move(table));
     syntx.ParseCode();
 

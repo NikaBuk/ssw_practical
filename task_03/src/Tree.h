@@ -58,6 +58,14 @@ public:
         this->right = tree;
     }
 
+    void RemoveTreeRight() {
+        this->right = nullptr;
+    }
+
+    void RemoveTreeLeft() {
+        this->left = nullptr;
+    }
+
 
     void ChangeValue(const std::string &val) {
         value = val;
@@ -133,7 +141,7 @@ public:
 
     static void FreeTree(Tree *&t_tree) {
         try {
-            if (t_tree->left  != nullptr) FreeTree(t_tree->left);
+            if (t_tree->left != nullptr) FreeTree(t_tree->left);
 
             if (t_tree->right != nullptr) FreeTree(t_tree->right);
 

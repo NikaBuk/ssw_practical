@@ -15,8 +15,8 @@ public:
     std::string type;
     std::string value;
     bool flagArray{ false };
-	int beginArrayValue;
-	int endArrayValue;
+    int beginArrayValue;
+    int endArrayValue;
 };
 
 
