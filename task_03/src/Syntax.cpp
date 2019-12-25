@@ -148,37 +148,37 @@ int Syntax::blockParse(lex_it &t_iter) {
         auto iter = getNextLex(t_iter);
 
         switch (iter->GetToken()) {
-        case var_tk: {
-            root_tree->AddLeftNode("var");
-            vardpParse(t_iter, root_tree->GetLeftNode());
-            break;
-        }
-
-        case begin_tk: {
-            Tree* tmpTree = new Tree();
-            tmpTree = compoundParse(t_iter);
-
-            if (tmpTree != nullptr) {
-                root_tree->AddRightTree(tmpTree);
+            case var_tk: {
+                root_tree->AddLeftNode("var");
+                vardpParse(t_iter, root_tree->GetLeftNode());
+                break;
             }
 
-            break;
-        }
+            case begin_tk: {
+                Tree* tmpTree = new Tree();
+                tmpTree = compoundParse(t_iter);
 
-        case dot_tk: {
-            if (error_count == 0) {
-                std::cout << "Program was parse successfully" << std::endl;
-                root_tree->PrintTree();
-            } else {
-                std::cout << "Got error during parse" << std::endl;
+                if (tmpTree != nullptr) {
+                    root_tree->AddRightTree(tmpTree);
+                }
+
+                break;
             }
 
-            break;
-        }
+            case dot_tk: {
+                if (error_count == 0) {
+                    std::cout << "Program was parse successfully" << std::endl;
+                    root_tree->PrintTree();
+                } else {
+                    std::cout << "Got error during parse" << std::endl;
+                }
 
-        default: {
-            break;
-        }
+                break;
+            }
+
+            default: {
+                break;
+            }
         }
     } catch (const std::exception &exp) {
         std::cerr << "<E> Syntax: Catch exception in " << __func__ << ": "
@@ -215,108 +215,142 @@ int Syntax::vardpParse(Syntax::lex_it &t_iter, Tree *t_tree) {
     updateVarTypes(var_list, type_iter->GetName());
 
     switch (t_iter->GetToken()) {
-    case type_tk: {
-        getNextLex(t_iter);
+        case type_tk: {
+            getNextLex(t_iter);
 
-        if (!checkLexem(t_iter, semi_tk)) {
-            printError(MUST_BE_SEMI, *t_iter);
+            if (t_iter->GetToken() == eqv_tk) {
+                auto val_for_init = getNextLex(t_iter)->GetName();
+
+                if (t_iter->GetToken() != constant_tk) {
+                    printError(MUST_BE_CONSTANT, *t_iter);
+                }
+
+                updateVarValue_for_vars(var_list, val_for_init);
+                getNextLex(t_iter);
+            }
+
+            if (!checkLexem(t_iter, semi_tk)) {
+                printError(MUST_BE_SEMI, *t_iter);
+            }
+
+            updateVarTypes(var_list, type_iter->GetName());
+
+            buildVarTree(var_list, t_tree);
+
+            auto forwrd_lex = peekLex(1, t_iter);
+
+            if (checkLexem(forwrd_lex, var_tk) || checkLexem(forwrd_lex, id_tk)) {
+                if (checkLexem(forwrd_lex, var_tk))
+                    getNextLex(t_iter);
+
+                if (var_list.size() > 1) {
+                    while (t_tree->GetRightNode() != nullptr) {
+                        t_tree = t_tree->GetRightNode();
+                    }
+
+                    vardpParse(t_iter, t_tree);
+                } else vardpParse(t_iter, t_tree->GetRightNode());
+            } else {
+                t_tree = Find_$_end_remove_tree(t_tree);
+            }
+
+            break;
         }
 
-        updateVarTypes(var_list, type_iter->GetName());
+        case array_tk: {
 
-        buildVarTree(var_list, t_tree);
-        if(var_list.size() > 1) {
-            t_tree = t_tree->GetRightNode();
-        }
+            if (getNextLex(t_iter)->GetToken() != osb_tk) {
+                printError(MUST_BE_OSB, *t_iter);
+            }
 
-        auto forwrd_lex = peekLex(1, t_iter);
+            auto valueOfArray = atoi((getNextLex(t_iter)->GetName()).c_str());
+            int first_value_of_range = valueOfArray;
+            int second_value_of_range = 0;
 
-        if (checkLexem(forwrd_lex, var_tk) || checkLexem(forwrd_lex, id_tk)) {
-            if (checkLexem(forwrd_lex, var_tk))
+            if (getNextLex(t_iter)->GetToken() != dot_tk) {
+                printError(MUST_BE_DOT, *t_iter);
+            }
+
+            if (getNextLex(t_iter)->GetToken() != dot_tk) {
+                printError(MUST_BE_DOT, *t_iter);
+            }
+
+            if (atoi((getNextLex(t_iter)->GetName()).c_str()) >= valueOfArray) {
+                valueOfArray += atoi((t_iter->GetName()).c_str()) + 1;
+                second_value_of_range = atoi((t_iter->GetName()).c_str());
+            } else {
+                printError(INVALID_RANGE_OF_ARRAY, *t_iter);
+            }
+
+            if (getNextLex(t_iter)->GetToken() != csb_tk) {
+                printError(MUST_BE_CSB, *t_iter);
+            }
+
+            if (getNextLex(t_iter)->GetToken() != of_tk) {
+                printError(MUST_BE_OF, *t_iter);
+            }
+
+            auto tmptype = getNextLex(t_iter);
+            getNextLex(t_iter);
+
+            if (tmptype->GetToken() != type_tk) {
+                printError(MUST_BE_TYPE, *t_iter);
+            }
+
+            if (tmptype->GetName() != "integer") {
+                printError(WRONG_TYPE_MUST_BE_INTEGER, *t_iter);
+            }
+
+            auto * tmp_tree = new Tree;
+
+            if (t_iter->GetToken() == eqv_tk) {
                 getNextLex(t_iter);
 
-            vardpParse(t_iter, t_tree->GetRightNode());
-        } else {
-            t_tree = Find_$_end_remove_tree(t_tree);
-        }
+                if (t_iter->GetToken() == bracel_tk) {
+                    getNextLex(t_iter);
+                    auto * tmp_tree_for_value = new Tree;
+                    tmp_tree_for_value->ChangeValue("$");
 
-        break;
-    }
+                    int i = 0;
 
-    case array_tk: {
+                    tmp_tree = createTreeForValueArrs(tmp_tree_for_value, first_value_of_range,
+                                                      second_value_of_range, i, t_iter);
 
+                    if (getNextLex(t_iter)->GetToken() != bracer_tk) {
+                        printError(MUST_BE_BRACER, *t_iter);
+                    }
+                }
 
-        if (getNextLex(t_iter)->GetToken() != osb_tk) {
-            printError(MUST_BE_OSB,*t_iter);
-        }
-
-        //there is a arrays range
-        auto valueOfArray = atoi((getNextLex(t_iter)->GetName()).c_str());
-        int first_value_of_range = valueOfArray;
-        int second_value_of_range;
-        if (getNextLex(t_iter)->GetToken() != dot_tk) {
-            printError(MUST_BE_DOT,*t_iter);
-        }
-
-        if (getNextLex(t_iter)->GetToken() != dot_tk) {
-            printError(MUST_BE_DOT,*t_iter);
-        }
-        if (atoi((getNextLex(t_iter)->GetName()).c_str()) >= valueOfArray) {
-            valueOfArray += atoi((t_iter->GetName()).c_str());
-            second_value_of_range = atoi((t_iter->GetName()).c_str());
-        }
-        else {
-            printError(INVALID_RANGE_OF_ARRAY,*t_iter);
-        }
-
-        if (getNextLex(t_iter)->GetToken() != csb_tk) {
-            printError(MUST_BE_CSB,*t_iter);
-        }
-
-        if (getNextLex(t_iter)->GetToken() != of_tk) {
-            printError(MUST_BE_OF,*t_iter);
-        }
-
-        if (var_list.size() > 1) {
-            printError(MUST_BE_ONE_ID_ARRAY,*t_iter);
-        }
-
-        auto tmptype = getNextLex(t_iter);
-        getNextLex(t_iter);
-
-        if (tmptype->GetToken() != type_tk) {
-            printError(MUST_BE_TYPE,*t_iter);
-        }
-
-        if(tmptype->GetName() != "integer") {
-            printError(WRONG_TYPE_MUST_BE_INTEGER,*t_iter);
-        }
-
-        if (!checkLexem(t_iter, semi_tk)) {
-            printError(MUST_BE_SEMI, *t_iter);
-        }
-
-        updateVarTypes(var_list, tmptype->GetName());
-        updateVarValue(var_list.begin()->c_str(), std::to_string(valueOfArray),first_value_of_range,second_value_of_range);
-
-        buildVarTree(var_list, t_tree);
-
-        auto forwrd_lex = peekLex(1, t_iter);
-
-        if (checkLexem(forwrd_lex, var_tk) || checkLexem(forwrd_lex, id_tk)) {
-            if (checkLexem(forwrd_lex, var_tk))
                 getNextLex(t_iter);
+            }
 
-            vardpParse(t_iter, t_tree->GetRightNode());
-        } else {
-            t_tree = Find_$_end_remove_tree(t_tree);
+
+            if (!checkLexem(t_iter, semi_tk)) {
+                printError(MUST_BE_SEMI, *t_iter);
+            }
+
+            updateVarTypes(var_list, tmptype->GetName());
+            updateVarValue(var_list, std::to_string(valueOfArray), first_value_of_range,
+                           second_value_of_range);
+
+            buildVarTree_for_arr_with_val(var_list, t_tree, tmp_tree);
+
+            auto forwrd_lex = peekLex(1, t_iter);
+
+            if (checkLexem(forwrd_lex, var_tk) || checkLexem(forwrd_lex, id_tk)) {
+                if (checkLexem(forwrd_lex, var_tk))
+                    getNextLex(t_iter);
+
+                vardpParse(t_iter, t_tree->GetRightNode());
+            } else {
+                t_tree = Find_$_end_remove_tree(t_tree);
+            }
+
+            break;
         }
 
-        break;
-    }
-
-    default: {
-    }
+        default: {
+        }
     }
 
 
@@ -417,12 +451,12 @@ Tree *Syntax::compoundParse(lex_it &t_iter) {
         }
 
         tree->AddRightNode(t_iter->GetName() + ".");
-    } else if ((checkLexem(peekLex(1, t_iter), unknown_tk)
-                || !checkLexem(peekLex(1, t_iter), dot_tk)) &&
-               ( checkLexem(peekLex(1, t_iter), eof_tk)
-                 || checkLexem(peekLex(2, t_iter), eof_tk))) {
-        printError(MUST_BE_DOT, *t_iter);
-        return nullptr;
+//    } else if ((checkLexem(peekLex(1, t_iter), unknown_tk)
+//                || !checkLexem(peekLex(1, t_iter), dot_tk)) &&
+//               ( checkLexem(peekLex(1, t_iter), eof_tk)
+//                 || checkLexem(peekLex(2, t_iter), eof_tk))) {
+//        printError(MUST_BE_DOT, *t_iter);
+//        return nullptr;
     } else
         tree->AddRightNode(t_iter->GetName());
 
@@ -443,216 +477,223 @@ Tree* Syntax::stateParse(lex_it &t_iter, const std::string& opValue) {
     static std::string valueTreeForBreakTree;
 
     switch (iter->GetToken()) {
-    case id_tk: {
-        if (!isVarExist(iter->GetName())) {
-            printError(UNKNOWN_ID, *t_iter);
-            return nullptr;
-        }
-
-        auto var_iter = iter;
-        getNextLex(t_iter);
-
-        if (!checkLexem(t_iter, ass_tk) && !checkLexem(t_iter, osb_tk)) {
-            printError(MUST_BE_ASS, *t_iter);
-            return nullptr;
-        }
-
-        auto* tree_exp = new Tree;
-
-        switch (t_iter->GetToken()) {
-        case ass_tk: {
-            tree_exp = Tree::CreateNode(t_iter->GetName());
-            tree_exp->AddLeftNode(var_iter->GetName());
-
-            expressionParse(t_iter, &tree_exp);
-
-            break;
-        }
-
-        case osb_tk: {
-
-            tree_exp = Tree::CreateNode("$");
-            tree_exp->AddLeftNode(var_iter->GetName());
-
-            auto* tree_osbTMP = new Tree;
-            tree_osbTMP->ChangeValue(":=");
-
-            expressionParse(t_iter, &tree_osbTMP);
-
-            if(t_iter->GetToken() != csb_tk) {
-                printError(MUST_BE_CSB,*t_iter);
+        case id_tk: {
+            if (!isVarExist(iter->GetName())) {
+                printError(UNKNOWN_ID, *t_iter);
                 return nullptr;
             }
 
-            tree_exp->AddRightTree(tree_osbTMP->GetRightNode());
-
-
-            auto* tmpTreeForResult = new Tree;
+            auto var_iter = iter;
             getNextLex(t_iter);
-            tmpTreeForResult = Tree::CreateNode(t_iter->GetName());
-            tmpTreeForResult->AddLeftTree(tree_exp);
 
-            auto* tmp_tree_2 = new Tree;
-            tmp_tree_2->ChangeValue(":=");
+            if (!checkLexem(t_iter, ass_tk) && !checkLexem(t_iter, osb_tk)) {
+                printError(MUST_BE_ASS, *t_iter);
+                return nullptr;
+            }
 
-            expressionParse(t_iter, &tmp_tree_2);
-            tmpTreeForResult->AddRightTree(tmp_tree_2->GetRightNode());
-            tree_exp = tmpTreeForResult;
+            auto* tree_exp = new Tree;
+
+            switch (t_iter->GetToken()) {
+                case ass_tk: {
+                    tree_exp = Tree::CreateNode(t_iter->GetName());
+                    tree_exp->AddLeftNode(var_iter->GetName());
+
+                    expressionParse(t_iter, &tree_exp);
+
+                    break;
+                }
+
+                case osb_tk: {
+
+                    tree_exp = Tree::CreateNode("$");
+                    tree_exp->AddLeftNode(var_iter->GetName());
+
+                    auto* tree_osbTMP = new Tree;
+                    tree_osbTMP->ChangeValue(":=");
+
+                    expressionParse(t_iter, &tree_osbTMP);
+
+                    if (t_iter->GetToken() != csb_tk) {
+                        printError(MUST_BE_CSB, *t_iter);
+                        return nullptr;
+                    }
+
+                    tree_exp->AddRightTree(tree_osbTMP->GetRightNode());
+
+
+                    auto* tmpTreeForResult = new Tree;
+                    getNextLex(t_iter);
+                    tmpTreeForResult = Tree::CreateNode(t_iter->GetName());
+                    tmpTreeForResult->AddLeftTree(tree_exp);
+
+                    auto* tmp_tree_2 = new Tree;
+                    tmp_tree_2->ChangeValue(":=");
+
+                    expressionParse(t_iter, &tmp_tree_2);
+                    tmpTreeForResult->AddRightTree(tmp_tree_2->GetRightNode());
+                    tree_exp = tmpTreeForResult;
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+
+            if (!checkLexem(t_iter, semi_tk)) { // we exit from expression on the ';'
+                printError(MUST_BE_SEMI, *t_iter);
+                return nullptr;
+            }
+
+
+            //tree_exp->PrintTree();
+            result_tree = tree_exp;
+            break;
+        }
+
+        case begin_tk: {
+            auto *tree_comp = compoundParse(t_iter);
+            getNextLex(t_iter);
+
+            if (!checkLexem(t_iter, semi_tk)) {
+                printError(MUST_BE_SEMI, *t_iter);
+                return nullptr;
+            }
+
+            if (tree_comp != nullptr)
+                result_tree = tree_comp;
 
             break;
         }
 
-        default:
+        case if_tk: {
+            Tree* tmpTree = new Tree();
+            Tree* if_tree = new Tree();
+            tmpTree->ChangeValue(":=");
+
+            expressionParse(t_iter, &tmpTree);
+            if_tree->AddLeftTree(tmpTree->GetRightNode());
+            if_tree->ChangeValue("if");
+
+            if (t_iter->GetToken() != then_tk) {
+                printError(MUST_BE_THEN, *t_iter);
+                return nullptr;
+            }
+
+            if_tree->AddRightNode("then");
+            tmpTree = if_tree->GetRightNode();
+
+            if (peekLex(1, t_iter)->GetToken() != begin_tk)
+                (if_tree->GetRightNode())->AddLeftTree(stateParse(t_iter, opValue));
+            else
+                (if_tree->GetRightNode())->AddLeftTree(stateParse(t_iter, ""));
+
+            //getNextLex(t_iter);
+
+            if (t_iter->GetToken() != semi_tk) {
+                printError(MUST_BE_SEMI, *t_iter);
+                return nullptr;
+            }
+
+            if (peekLex(1, t_iter)->GetToken() == else_tk) {
+                getNextLex(t_iter);
+                (if_tree->GetRightNode())->AddRightTree(stateParse(t_iter, ""));
+            }
+
+            if (t_iter->GetToken() != semi_tk) {
+                printError(MUST_BE_SEMI, *t_iter);
+                return nullptr;
+            }
+
+            result_tree = if_tree;
+
             break;
         }
 
-        if (!checkLexem(t_iter, semi_tk)) { // we exit from expression on the ';'
-            printError(MUST_BE_SEMI, *t_iter);
-            return nullptr;
+        case for_tk: {
+            valueTreeForBreakTree = opValue;
+            Tree* for_tree = new Tree();
+            Tree* tmpTree = new Tree();
+
+            tmpTree->ChangeValue(":=");
+            for_tree->ChangeValue("for");
+
+            auto iter = getNextLex(t_iter);
+
+            tmpTree->AddLeftNode(t_iter->GetName());
+            t_iter = getNextLex(t_iter);
+            expressionParse(t_iter, &tmpTree);
+
+            if (t_iter->GetToken() == to_tk) {
+                for_tree->AddLeftNode("<=");
+                (for_tree->GetLeftNode())->AddLeftTree(tmpTree);
+                auto* tmp_tree = for_tree->GetLeftNode();
+                expressionParse(t_iter, &tmp_tree);
+            } else if (t_iter->GetToken() == downto_tk) {
+                for_tree->AddLeftNode(">=");
+                (for_tree->GetLeftNode())->AddLeftTree(tmpTree);
+                auto* tmp_tree = for_tree->GetLeftNode();
+                expressionParse(t_iter, &tmp_tree);
+            } else {
+                printError(MUST_BE_OPERATOR_GE_OR_LE, *t_iter);
+                return nullptr;
+            }
+
+            if (t_iter->GetToken() == do_tk) {
+                for_tree->AddRightTree(stateParse(t_iter, ""));
+            } else {
+                printError(MUST_BE_DO, *t_iter);
+                return nullptr;
+            }
+
+            result_tree = for_tree;
+
+            break;
         }
 
+        case while_tk: {
+            valueTreeForBreakTree = opValue;
+            Tree* tmpTree = new Tree();
+            Tree* while_tree = new Tree();
+            tmpTree->ChangeValue(":=");
 
-        //tree_exp->PrintTree();
-        result_tree = tree_exp;
-        break;
-    }
+            expressionParse(t_iter, &tmpTree);
+            while_tree->AddLeftTree(tmpTree->GetRightNode());
 
-    case begin_tk: {
-        auto *tree_comp = compoundParse(t_iter);
-        getNextLex(t_iter);
+            while_tree->ChangeValue("while");
 
-        if (!checkLexem(t_iter, semi_tk)) {
-            printError(MUST_BE_SEMI, *t_iter);
-            return nullptr;
+            if (t_iter->GetToken() != do_tk) {
+                printError(MUST_BE_DO, *t_iter);
+                return nullptr;
+            }
+
+            while_tree->AddRightTree(stateParse(t_iter, ""));
+
+            result_tree = while_tree;
+
+            break;
         }
 
-        if (tree_comp != nullptr)
-            result_tree = tree_comp;
-
-        break;
-    }
-
-    case if_tk: {
-        Tree* tmpTree = new Tree();
-        Tree* if_tree = new Tree();
-        tmpTree->ChangeValue(":=");
-
-        expressionParse(t_iter, &tmpTree);
-        if_tree->AddLeftTree(tmpTree->GetRightNode());
-        if_tree->ChangeValue("if");
-
-        if (t_iter->GetToken() != then_tk) {
-            printError(MUST_BE_THEN,*t_iter);
-            return nullptr;
-        }
-
-        if_tree->AddRightNode("then");
-        tmpTree = if_tree->GetRightNode();
-        if(peekLex(1,t_iter)->GetToken()!=begin_tk)
-            (if_tree->GetRightNode())->AddLeftTree(stateParse(t_iter, opValue));
-        else
-            (if_tree->GetRightNode())->AddLeftTree(stateParse(t_iter, ""));
-
-        //getNextLex(t_iter);
-
-        if (t_iter->GetToken() != semi_tk) {
-            printError(MUST_BE_SEMI,*t_iter);
-            return nullptr;
-        }
-
-        if (peekLex(1, t_iter)->GetToken() == else_tk) {
+        case break_tk: {
+            Tree* break_tree = Tree::CreateNode(t_iter->GetName());
+            break_tree->AddRightNode(valueTreeForBreakTree);
             getNextLex(t_iter);
-            (if_tree->GetRightNode())->AddRightTree(stateParse(t_iter, ""));
+
+            if (t_iter->GetToken() != semi_tk) {
+                printError(MUST_BE_SEMI, *t_iter);
+                return nullptr;
+            }
+
+            result_tree = break_tree;
+
+            break;
         }
 
-        if (t_iter->GetToken() != semi_tk) {
-            printError(MUST_BE_SEMI,*t_iter);
-            return nullptr;
+        default: {
+            /*printError(UNKNOWN_LEXEM, *t_iter);
+            return nullptr;*/
+            break;
         }
-
-        result_tree = if_tree;
-
-        break;
-    }
-
-    case for_tk: {
-        valueTreeForBreakTree = opValue;
-        Tree* for_tree = new Tree();
-        Tree* tmpTree = new Tree();
-
-        tmpTree->ChangeValue(":=");
-        for_tree->ChangeValue("for");
-
-        auto iter = getNextLex(t_iter);
-
-        tmpTree->AddLeftNode(t_iter->GetName());
-        t_iter = getNextLex(t_iter);
-        expressionParse(t_iter, &tmpTree);
-
-        if (t_iter->GetToken() == to_tk) {
-            for_tree->AddLeftNode("<=");
-            (for_tree->GetLeftNode())->AddLeftTree(tmpTree);
-            auto* tmp_tree = for_tree->GetLeftNode();
-            expressionParse(t_iter, &tmp_tree);
-        } else if (t_iter->GetToken() == downto_tk) {
-            for_tree->AddLeftNode(">=");
-            (for_tree->GetLeftNode())->AddLeftTree(tmpTree);
-            auto* tmp_tree = for_tree->GetLeftNode();
-            expressionParse(t_iter, &tmp_tree);
-        }
-        else {
-            printError(MUST_BE_OPERATOR_GE_OR_LE, *t_iter);
-            return nullptr;
-        }
-
-        if (t_iter->GetToken() == do_tk) {
-            for_tree->AddRightTree(stateParse(t_iter, ""));
-        } else {
-            printError(MUST_BE_DO, *t_iter);
-            return nullptr;
-        }
-        result_tree = for_tree;
-
-        break;
-    }
-
-    case while_tk: {
-        valueTreeForBreakTree = opValue;
-        Tree* tmpTree = new Tree();
-        Tree* while_tree = new Tree();
-        tmpTree->ChangeValue(":=");
-
-        expressionParse(t_iter, &tmpTree);
-        while_tree->AddLeftTree(tmpTree->GetRightNode());
-
-        while_tree->ChangeValue("while");
-
-        if (t_iter->GetToken() != do_tk) {
-            printError(MUST_BE_DO, *t_iter);
-            return nullptr;
-        }
-
-        while_tree->AddRightTree(stateParse(t_iter, ""));
-
-        result_tree = while_tree;
-
-        break;
-    }
-
-    case break_tk: {
-        Tree* break_tree = Tree::CreateNode(t_iter->GetName());
-        break_tree->AddRightNode(valueTreeForBreakTree);
-        getNextLex(t_iter);
-        result_tree = break_tree;
-
-        break;
-    }
-
-    default: {
-        /*printError(UNKNOWN_LEXEM, *t_iter);
-        return nullptr;*/
-        break;
-    }
     }
 
     return result_tree;
@@ -673,87 +714,101 @@ int Syntax::expressionParse(lex_it &t_iter, Tree **tree) {
     auto iter = getNextLex(t_iter);
 
     switch (iter->GetToken()) {
-    case id_tk: {
-        if (!isVarExist(iter->GetName()))
-            printError(UNKNOWN_ID, *t_iter);
-    }
-    case constant_tk: {
-        if ((peekLex(1, t_iter)->GetToken() == osb_tk) || (t_iter->GetToken() == osb_tk)) {
-            auto* tree_exp = new Tree;
-            tree_exp = Tree::CreateNode(t_iter->GetName());
+        case id_tk: {
+            if (!isVarExist(iter->GetName()))
+                printError(UNKNOWN_ID, *t_iter);
+        }
 
-            auto* tmpTreeForResult = new Tree;
-            getNextLex(t_iter);
-            tmpTreeForResult = Tree::CreateNode(":=");
-            tmpTreeForResult->AddLeftTree(tree_exp);
+        case constant_tk: {
+            if ((peekLex(1, t_iter)->GetToken() == osb_tk) || (t_iter->GetToken() == osb_tk)) {
+                auto* tree_exp = new Tree;
+                tree_exp = Tree::CreateNode(t_iter->GetName());
+
+                auto* tmpTreeForResult = new Tree;
+                getNextLex(t_iter);
+                tmpTreeForResult = Tree::CreateNode(":=");
+                tmpTreeForResult->AddLeftTree(tree_exp);
 
 
-            expressionParse(t_iter, &tmpTreeForResult);
-            tmpTreeForResult->ChangeValue("$");
-            if (t_iter->GetToken() != csb_tk) {
-                printError(MUST_BE_CSB, *t_iter);
-                return -1;
-            }
-            auto* tmp_tree = new Tree;
-            tmp_tree->ChangeValue(":=");
-            if (t_iter->GetToken() != semi_tk) {
-                simplExprParseForTree(tmpTreeForResult,t_iter,&tmp_tree);
-                (*tree)->AddRightTree(tmp_tree->GetRightNode());
+                expressionParse(t_iter, &tmpTreeForResult);
+                tmpTreeForResult->ChangeValue("$");
+
+                if (t_iter->GetToken() != csb_tk) {
+                    printError(MUST_BE_CSB, *t_iter);
+                    return -1;
+                }
+
+                auto* tmp_tree = new Tree;
+                tmp_tree->ChangeValue(":=");
+
+                if (t_iter->GetToken() != semi_tk) {
+                    simplExprParseForTree(tmpTreeForResult, t_iter, &tmp_tree);
+                    (*tree)->AddRightTree(tmp_tree->GetRightNode());
+                    break;
+                }
+
                 break;
             }
+
+            var_iter = iter; // save variable/constant value
+            subTree  = simplExprParse(var_iter, t_iter, (*tree));
             break;
         }
-        var_iter = iter; // save variable/constant value
-        subTree  = simplExprParse(var_iter, t_iter, (*tree));
-        break;
-    }
-    case osb_tk: {
-        var_iter = iter; // save variable/constant value
-        subTree = simplExprParse(var_iter, t_iter, (*tree));
-        break;
-    }
-    case sub_tk: {
-        auto* tmptreeExp = new Tree;
-        tmptreeExp->ChangeValue(":=");
-        if ((peekLex(1, t_iter)->GetToken() == id_tk) | (peekLex(1, t_iter)->GetToken() == constant_tk)) {
-            getNextLex(t_iter);
-            tmptreeExp->ChangeValue("-");
-            tmptreeExp->AddLeftNode("0");
-            tmptreeExp->AddRightNode(t_iter->GetName());
-            auto* tmp_tree = new Tree;
-            tmp_tree->ChangeValue(":=");
-            if (peekLex(1, t_iter)->GetToken() != (ass_tk | semi_tk)) {
-                simplExprParseForTree(tmptreeExp, t_iter, &tmp_tree);
-            }
-            (*tree)->AddRightTree(tmp_tree->GetRightNode());
+
+        case osb_tk: {
+            var_iter = iter; // save variable/constant value
+            subTree = simplExprParse(var_iter, t_iter, (*tree));
+            break;
         }
-        else {
+
+        case sub_tk: {
+            auto* tmptreeExp = new Tree;
+            tmptreeExp->ChangeValue(":=");
+
+            if ((peekLex(1, t_iter)->GetToken() == id_tk) | (peekLex(1,
+                    t_iter)->GetToken() == constant_tk)) {
+                getNextLex(t_iter);
+                tmptreeExp->ChangeValue("-");
+                tmptreeExp->AddLeftNode("0");
+                tmptreeExp->AddRightNode(t_iter->GetName());
+                auto* tmp_tree = new Tree;
+                tmp_tree->ChangeValue(":=");
+
+                if (peekLex(1, t_iter)->GetToken() != (ass_tk | semi_tk)) {
+                    simplExprParseForTree(tmptreeExp, t_iter, &tmp_tree);
+                }
+
+                (*tree)->AddRightTree(tmp_tree->GetRightNode());
+            } else {
+                auto* tmptreeExp = new Tree;
+                tmptreeExp->ChangeValue(":=");
+                expressionParse(t_iter, &tmptreeExp);
+                tmptreeExp->ChangeValue("-");
+                tmptreeExp->AddLeftNode("0");
+                (*tree)->AddRightTree(tmptreeExp);
+            }
+
+            break;
+        }
+
+        case opb_tk: {
+            auto tmpIter = iter;
             auto* tmptreeExp = new Tree;
             tmptreeExp->ChangeValue(":=");
             expressionParse(t_iter, &tmptreeExp);
-            tmptreeExp->ChangeValue("-");
-            tmptreeExp->AddLeftNode("0");
-            (*tree)->AddRightTree(tmptreeExp);
+            auto* tmptree = new Tree;
+            tmptree->ChangeValue(":=");
+            simplExprParseForTree(tmptreeExp->GetRightNode(), t_iter, &tmptree);
+            (*tree)->AddRightTree(tmptree->GetRightNode());
+            break;
         }
-        break;
-    }
-    case opb_tk: {
-        auto tmpIter = iter;
-        auto* tmptreeExp = new Tree;
-        tmptreeExp->ChangeValue(":=");
-        expressionParse(t_iter, &tmptreeExp);
-        auto* tmptree = new Tree;
-        tmptree->ChangeValue(":=");
-        simplExprParseForTree(tmptreeExp->GetRightNode(), t_iter, &tmptree);
-        (*tree)->AddRightTree(tmptree->GetRightNode());
-        break;
+
+        default: {
+            printError(MUST_BE_ID, *t_iter);
+            return -EXIT_FAILURE;
+        }
     }
 
-    default: {
-        printError(MUST_BE_ID, *t_iter);
-        return -EXIT_FAILURE;
-    }
-    }
     return EXIT_SUCCESS;
 }
 
@@ -772,52 +827,53 @@ Tree* Syntax::simplExprParse(Syntax::lex_it& var_iter,
     auto iter = getNextLex(t_iter);
 
     switch (iter->GetToken()) {
-    case opb_tk: {
-        expressionParse(t_iter, &tree);
-        break;
-    }
-    case add_tk:            // TODO: And check the types of variables
-    case sub_tk:            //   during operations
-    case mul_tk:
-    case xor_tk:
-    case and_tk:
-    case or_tk:
-    case div_tk:
-    case lequ_tk:
-    case mequ_tk:
-    case less_tk:
-    case more_tk:
-    case eqv_tk:
-    case newton_tk: {
-        if (operations.at(iter->GetName()) <=
-                operations.at(tree->GetValue())) {       // Priority of current <=
-            tree->AddRightNode(var_iter->GetName());
-            subTree = tree->GetParentNode();
-
-            while (operations.at(iter->GetName()) <= // go through parents
-                    operations.at(subTree->GetValue()))
-                subTree = subTree->GetParentNode();
-
-            subTree = createLowestOpTree(subTree, iter->GetName());
-        } else { // if Priority of current >
-            /******* Create a new node of subexpression ************/
-            tree->AddRightNode(iter->GetName());            //     <oper> <- subTree
-            subTree = tree->GetRightNode();                 //      /  /
-            subTree->AddLeftNode(var_iter->GetName());      //    val  nullptr
-            /********************************************************/
+        case opb_tk: {
+            expressionParse(t_iter, &tree);
+            break;
         }
 
-        expressionParse(t_iter, &subTree);
+        case add_tk:            // TODO: And check the types of variables
+        case sub_tk:            //   during operations
+        case mul_tk:
+        case xor_tk:
+        case and_tk:
+        case or_tk:
+        case div_tk:
+        case lequ_tk:
+        case mequ_tk:
+        case less_tk:
+        case more_tk:
+        case eqv_tk:
+        case newton_tk: {
+            if (operations.at(iter->GetName()) <=
+                    operations.at(tree->GetValue())) {       // Priority of current <=
+                tree->AddRightNode(var_iter->GetName());
+                subTree = tree->GetParentNode();
 
-        //tree->AddRightTree(subTree);
+                while (operations.at(iter->GetName()) <= // go through parents
+                        operations.at(subTree->GetValue()))
+                    subTree = subTree->GetParentNode();
 
-        break;
-    }
+                subTree = createLowestOpTree(subTree, iter->GetName());
+            } else { // if Priority of current >
+                /******* Create a new node of subexpression ************/
+                tree->AddRightNode(iter->GetName());            //     <oper> <- subTree
+                subTree = tree->GetRightNode();                 //      /  /
+                subTree->AddLeftNode(var_iter->GetName());      //    val  nullptr
+                /********************************************************/
+            }
 
-    default: { // any other lexem, expression is over
-        tree->AddRightNode(var_iter->GetName());
-        break;
-    }
+            expressionParse(t_iter, &subTree);
+
+            //tree->AddRightTree(subTree);
+
+            break;
+        }
+
+        default: { // any other lexem, expression is over
+            tree->AddRightNode(var_iter->GetName());
+            break;
+        }
     }
 
     return tree;
@@ -828,45 +884,45 @@ Tree* Syntax::simplExprParseForTree(Tree* treeCPB, lex_it& t_iter, Tree** tree) 
     auto iter = getNextLex(t_iter);
 
     switch (iter->GetToken()) {
-    case add_tk:            // TODO: And check the types of variables
-    case sub_tk:            //   during operations
-    case mul_tk:
-    case xor_tk:
-    case and_tk:
-    case or_tk:
-    case div_tk:
-    case lequ_tk:
-    case mequ_tk:
-    case less_tk:
-    case more_tk:
-    case eqv_tk:
-    case newton_tk: {
-        if (operations.at(iter->GetName()) <=
-                operations.at((*tree)->GetValue())) {       // Priority of current <=
-            (*tree)->AddRightTree(treeCPB);
-            subTree = (*tree)->GetParentNode();
+        case add_tk:            // TODO: And check the types of variables
+        case sub_tk:            //   during operations
+        case mul_tk:
+        case xor_tk:
+        case and_tk:
+        case or_tk:
+        case div_tk:
+        case lequ_tk:
+        case mequ_tk:
+        case less_tk:
+        case more_tk:
+        case eqv_tk:
+        case newton_tk: {
+            if (operations.at(iter->GetName()) <=
+                    operations.at((*tree)->GetValue())) {       // Priority of current <=
+                (*tree)->AddRightTree(treeCPB);
+                subTree = (*tree)->GetParentNode();
 
-            while (operations.at(iter->GetName()) <= // go through parents
-                    operations.at(subTree->GetValue()))
-                subTree = subTree->GetParentNode();
+                while (operations.at(iter->GetName()) <= // go through parents
+                        operations.at(subTree->GetValue()))
+                    subTree = subTree->GetParentNode();
 
-            subTree = createLowestOpTree(subTree, iter->GetName());
-        } else { // if Priority of current >
-            /******* Create a new node of subexpression ************/
-            (*tree)->AddRightNode(iter->GetName());            //     <oper> <- subTree
-            subTree = (*tree)->GetRightNode();                 //      /  /
-            subTree->AddLeftTree(treeCPB);      //    val  nullptr
-            /********************************************************/
+                subTree = createLowestOpTree(subTree, iter->GetName());
+            } else { // if Priority of current >
+                /******* Create a new node of subexpression ************/
+                (*tree)->AddRightNode(iter->GetName());            //     <oper> <- subTree
+                subTree = (*tree)->GetRightNode();                 //      /  /
+                subTree->AddLeftTree(treeCPB);      //    val  nullptr
+                /********************************************************/
+            }
+
+            expressionParse(t_iter, &subTree);
+            break;
         }
 
-        expressionParse(t_iter, &subTree);
-        break;
-    }
-
-    default: { // any other lexem, expression is over
-        (*tree)->AddRightTree(treeCPB);
-        break;
-    }
+        default: { // any other lexem, expression is over
+            (*tree)->AddRightTree(treeCPB);
+            break;
+        }
     }
 
     return *tree;
@@ -880,18 +936,18 @@ Tree* Syntax::boolExprParse(lex_it& t_iter, Tree* tree) {
     tree->AddLeftTree(tmpTree->GetRightNode());
 
     switch (t_iter->GetToken()) {
-    case lequ_tk:
-    case mequ_tk:
-    case less_tk:
-    case more_tk:
-    case eqv_tk:
-    case newton_tk: {
-        tree->ChangeValue(t_iter->GetName());
-        getNextLex(t_iter);
-        expressionParse(t_iter, &tmpTree);
-        tree = tmpTree;
-        return tree;
-    }
+        case lequ_tk:
+        case mequ_tk:
+        case less_tk:
+        case more_tk:
+        case eqv_tk:
+        case newton_tk: {
+            tree->ChangeValue(t_iter->GetName());
+            getNextLex(t_iter);
+            expressionParse(t_iter, &tmpTree);
+            tree = tmpTree;
+            return tree;
+        }
     }
 
     return nullptr;
@@ -910,125 +966,140 @@ void Syntax::printError(errors t_err, Lexem lex) {
     error_count++;
 
     switch (t_err) {
-    case UNKNOWN_LEXEM: {
-        std::cerr << "<E> Lexer: Get unknown lexem '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case UNKNOWN_LEXEM: {
+            std::cerr << "<E> Lexer: Get unknown lexem '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case EOF_ERR: {
-        std::cerr << "<E> Syntax: Premature end of file" << std::endl;
-        break;
-    }
+        case EOF_ERR: {
+            std::cerr << "<E> Syntax: Premature end of file" << std::endl;
+            break;
+        }
 
-    case MUST_BE_ID: {
-        std::cerr << "<E> Syntax: Must be identifier instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line"       << std::endl;
-        break;
-    }
+        case MUST_BE_ID: {
+            std::cerr << "<E> Syntax: Must be identifier instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line"       << std::endl;
+            break;
+        }
 
-    case MUST_BE_SEMI: {
-        std::cerr << "<E> Syntax: Must be ';' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_SEMI: {
+            std::cerr << "<E> Syntax: Must be ';' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_PROG: {
-        std::cerr << "<E> Syntax: Program must start from lexem 'program' ("
-                  << lex.GetLine() << ")" << std::endl;
-        break;
-    }
+        case MUST_BE_PROG: {
+            std::cerr << "<E> Syntax: Program must start from lexem 'program' ("
+                      << lex.GetLine() << ")" << std::endl;
+            break;
+        }
 
-    case MUST_BE_COMMA: {
-        std::cerr << "<E> Syntax: Must be ',' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_COMMA: {
+            std::cerr << "<E> Syntax: Must be ',' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case DUPL_ID_ERR: {
-        std::cerr << "<E> Syntax: Duplicate identifier '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line"  << std::endl;
-        break;
-    }
+        case DUPL_ID_ERR: {
+            std::cerr << "<E> Syntax: Duplicate identifier '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line"  << std::endl;
+            break;
+        }
 
-    case UNKNOWN_ID: {
-        std::cerr << "<E> Syntax: Undefined variable '"  << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case UNKNOWN_ID: {
+            std::cerr << "<E> Syntax: Undefined variable '"  << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_DOT: {
-        std::cerr << "<E> Syntax: Program must be end by '.'" << std::endl;
-        break;
-    }
+        case MUST_BE_DOT: {
+            std::cerr << "<E> Syntax: Program must be end by '.'" << std::endl;
+            break;
+        }
 
-    case MUST_BE_ASS: {
-        std::cerr << "<E> Syntax: Must be ':=' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_ASS: {
+            std::cerr << "<E> Syntax: Must be ':=' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_TYPE: {
-        std::cerr << "<E> Syntax: Must be type instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_TYPE: {
+            std::cerr << "<E> Syntax: Must be type instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_OSB: {
-        std::cerr << "<E> Syntax: Must be '[' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_OSB: {
+            std::cerr << "<E> Syntax: Must be '[' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_CSB: {
-        std::cerr << "<E> Syntax: Must be ']' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_CSB: {
+            std::cerr << "<E> Syntax: Must be ']' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case INVALID_RANGE_OF_ARRAY: {
-        std::cerr << "<E> Invalid range of array on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case INVALID_RANGE_OF_ARRAY: {
+            std::cerr << "<E> Invalid range of array on " << lex.GetLine() << " line" <<
+                      std::endl;
+            break;
+        }
 
-    case MUST_BE_OF: {
-        std::cerr << "<E> Syntax: Must be 'of' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_OF: {
+            std::cerr << "<E> Syntax: Must be 'of' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_ONE_ID_ARRAY: {
-        std::cerr << "<E> Syntax: Must be one id of array" << " on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_ONE_ID_ARRAY: {
+            std::cerr << "<E> Syntax: Must be one id of array" << " on " << lex.GetLine() <<
+                      " line" << std::endl;
+            break;
+        }
 
-    case WRONG_TYPE_MUST_BE_INTEGER: {
-        std::cerr << "<E> Syntax: Must be 'integer' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case WRONG_TYPE_MUST_BE_INTEGER: {
+            std::cerr << "<E> Syntax: Must be 'integer' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_THEN: {
-        std::cerr << "<E> Syntax: Must be 'then' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_THEN: {
+            std::cerr << "<E> Syntax: Must be 'then' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_OPERATOR_GE_OR_LE: {
-        std::cerr << "<E> Syntax: Must be 'to or downto' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
+        case MUST_BE_OPERATOR_GE_OR_LE: {
+            std::cerr << "<E> Syntax: Must be 'to or downto' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
 
-    case MUST_BE_DO: {
-        std::cerr << "<E> Syntax: Must be 'do' instead '" << lex.GetName()
-                  << "' on " << lex.GetLine() << " line" << std::endl;
-        break;
-    }
-    default: {
-        std::cerr << "<E> Syntax: Undefined type of error" << std::endl;
-        break;
-    }
+        case MUST_BE_DO: {
+            std::cerr << "<E> Syntax: Must be 'do' instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
+
+        case MUST_BE_CONSTANT: {
+            std::cerr << "<E> Syntax: Must be constant instead '" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
+
+        case WRONG_INIT: {
+            std::cerr << "<E> Syntax: Invalid array initialization'" << lex.GetName()
+                      << "' on " << lex.GetLine() << " line" << std::endl;
+            break;
+        }
+
+        default: {
+            std::cerr << "<E> Syntax: Undefined type of error" << std::endl;
+            break;
+        }
     }
 }
 
@@ -1129,11 +1200,14 @@ void Syntax::updateVarTypes(const std::list<std::string> &t_var_list,
     }
 }
 
-void Syntax::updateVarValue(const std::string& name, const std::string& value, int& firstValue, int& secondValue) {
-    id_map.at(name).value = value;
-    id_map.at(name).flagArray = true;
-    id_map.at(name).beginArrayValue = firstValue;
-    id_map.at(name).endArrayValue = secondValue;
+void Syntax::updateVarValue(const std::list<std::string> &t_var_list,
+                            const std::string& value, int& firstValue, int& secondValue) {
+    for (auto &el : t_var_list) {
+        id_map.at(el).value = value;
+        id_map.at(el).flagArray = true;
+        id_map.at(el).beginArrayValue = firstValue;
+        id_map.at(el).endArrayValue = secondValue;
+    }
 }
 
 
@@ -1156,12 +1230,18 @@ void Syntax::buildVarTree(const std::list<std::string> &t_var_list, Tree *t_tree
             auto *tmp_tree  = Tree::CreateNode(el);
             tmp_tree->AddRightNode(id_map.at(el).type);
 
+            if (id_map.at(el).hasValue)
+                tmp_tree->AddLeftNode(id_map.at(el).value);
+
             if (id_map.at(el).flagArray == true)
                 if (id_map.at(el).value != "?") {
                     tmp_tree->AddLeftNode("array");
-                    tmp_tree->GetLeftNode()->AddLeftNode(id_map.at(el).value);
-                    tmp_tree->GetLeftNode()->AddRightNode(std::to_string(id_map.at(el).beginArrayValue) + ".." + std::to_string(id_map.at(el).endArrayValue));
+//                    tmp_tree->GetLeftNode()->AddLeftNode(id_map.at(el).value);
+                    tmp_tree->GetRightNode()->ChangeValue("$");
+                    tmp_tree->GetRightNode()->AddLeftNode(std::to_string(id_map.at(el).beginArrayValue));
+                    tmp_tree->GetRightNode()->AddRightNode(std::to_string(id_map.at(el).endArrayValue));
                 }
+
             createVarTree(t_tree, tmp_tree, i++);
         }
     } catch (const std::exception &exp) {
@@ -1225,14 +1305,124 @@ Tree* Syntax::createLowestOpTree(Tree *t_parent_tree, std::string value) {
 }
 
 Tree* Syntax::Find_$_end_remove_tree(Tree *tree) {
-    if((tree->GetRightNode()->GetRightNode() != nullptr) & (tree->GetRightNode()->GetLeftNode() != nullptr)) {
+    if ((tree->GetRightNode()->GetRightNode() != nullptr) &
+            (tree->GetRightNode()->GetLeftNode() != nullptr)) {
         Find_$_end_remove_tree(tree->GetRightNode());
     }
+
     auto * tmp_val_r  = tree->GetRightNode()->GetRightNode();
     auto * tmp_val_l  = tree->GetRightNode()->GetLeftNode();
-    if((tmp_val_r == nullptr) && (tmp_val_l == nullptr)) {
+
+    if ((tmp_val_r == nullptr) && (tmp_val_l == nullptr)) {
         tree->RemoveTreeRight();
     }
+
     return tree->GetParentNode();
 }
+
+void Syntax::updateVarValue_for_vars(const std::list<std::string> &t_var_list,
+                                     const std::string &value) {
+    for (auto &el : t_var_list) {
+        id_map.at(el).value = value;
+        id_map.at(el).hasValue = true;
+    }
+}
+
+Tree *Syntax::Find_$_end(Tree *tree) {
+    if (tree->GetRightNode() != nullptr) {
+        Find_$_end_remove_tree(tree->GetRightNode());
+    }
+
+    auto * tmp_val_r  = tree->GetRightNode();
+
+    if (tmp_val_r == nullptr) {
+        return tree;
+    }
+}
+
+Tree *Syntax::createTreeForValueArrs(Tree *tree, int fir, int sec, int &counter,
+                                     Syntax::lex_it &iter) {
+    static bool flag_end = true;
+    static bool flag_error_with_init = true;
+    tree->AddLeftNode(iter->GetName());
+    tree->AddRightNode("$");
+
+    if (counter < (sec - fir)) {
+        counter++;
+        getNextLex(iter);
+
+        if (iter->GetToken() != comma_tk) {
+            printError(MUST_BE_COMMA, *iter);
+            return nullptr;
+        }
+
+        getNextLex(iter);
+
+        if (iter->GetToken() != constant_tk) {
+            printError(MUST_BE_CONSTANT, *iter);
+            return nullptr;
+        }
+
+        createTreeForValueArrs(tree->GetRightNode(), fir, sec, counter, iter);
+    }
+
+    if ((counter == (sec - fir)) & flag_end) {
+        tree->RemoveTreeRight();
+        flag_end = false;
+    }
+
+    if (((counter == (sec - fir)) & (peekLex(1,
+                                     iter)->GetToken() != bracer_tk)) & flag_error_with_init) {
+        printError(WRONG_INIT, *iter);
+        flag_error_with_init = false;
+        return nullptr;
+    }
+
+    if (tree->GetParentNode() != nullptr)
+        return tree->GetParentNode();
+    else
+        return tree;
+}
+
+void Syntax::updateVarValue_for_arr(const std::list<std::string> &t_var_list,
+                                    Tree* tree) {
+    for (auto &el : t_var_list) {
+        id_map.at(el).value = tree->GetLeftNode()->GetValue();
+        id_map.at(el).hasValue = true;
+        tree = tree->GetRightNode();
+    }
+}
+
+void Syntax::buildVarTree_for_arr_with_val(const std::list<std::string> &t_var_list,
+        Tree *t_tree, Tree * tree_init) {
+    try {
+        auto i = 0;
+
+        for (auto &el : t_var_list) {
+            auto *tmp_tree  = Tree::CreateNode(el);
+            tmp_tree->AddRightNode(id_map.at(el).type);
+
+            if (id_map.at(el).flagArray == true)
+                if (id_map.at(el).value != "?") {
+                    tmp_tree->AddLeftNode("array");
+                    tmp_tree->GetLeftNode()->AddRightNode("$");
+                    tmp_tree->GetLeftNode()->AddLeftTree(tree_init);
+                    tmp_tree->GetLeftNode()->GetRightNode()->AddLeftNode(std::to_string(id_map.at(
+                                el).beginArrayValue));
+                    tmp_tree->GetLeftNode()->GetRightNode()->AddRightNode(std::to_string(id_map.at(
+                                el).endArrayValue));
+                }
+
+            createVarTree(t_tree, tmp_tree, i++);
+        }
+    } catch (const std::exception &exp) {
+        std::cerr << "<E> Syntax: Catch exception in " << __func__ << ": "
+                  << exp.what() << std::endl;
+    }
+}
+
+
+
+
+
 

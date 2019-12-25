@@ -145,102 +145,110 @@ Lexem Lexer::getLex() {
             tokens tok;
 
             switch (ch) {
-            case ',' :
-                tok = comma_tk;
-                break;
+                case ',' :
+                    tok = comma_tk;
+                    break;
 
-            case '[':
-                tok = osb_tk;
-                break;
+                case '[':
+                    tok = osb_tk;
+                    break;
 
-            case ']':
-                tok = csb_tk;
-                break;
+                case ']':
+                    tok = csb_tk;
+                    break;
 
-            case '.' :
-                tok = dot_tk;
-                break;
+                case '}':
+                    tok = bracer_tk;
+                    break;
 
-            case ':' :
-                tok = ddt_tk;
-                break;
+                case '{':
+                    tok = bracel_tk;
+                    break;
 
-            case ';' :
-                tok = semi_tk;
-                break;
+                case '.' :
+                    tok = dot_tk;
+                    break;
 
-            case '=' :
-                tok = eqv_tk;
-                break;
+                case ':' :
+                    tok = ddt_tk;
+                    break;
 
-            case '(' :
-                tok = opb_tk;
-                break;
+                case ';' :
+                    tok = semi_tk;
+                    break;
 
-            case ')' :
-                tok = cpb_tk;
-                break;
+                case '=' :
+                    tok = eqv_tk;
+                    break;
 
-            case '*' :
-                tok = mul_tk;
-                break;
+                case '(' :
+                    tok = opb_tk;
+                    break;
 
-            case '+' :
-                tok = add_tk;
-                break;
+                case ')' :
+                    tok = cpb_tk;
+                    break;
 
-            case '-': {
-                tok = sub_tk;
+                case '*' :
+                    tok = mul_tk;
+                    break;
 
-                break;
-            }
+                case '+' :
+                    tok = add_tk;
+                    break;
 
-            case '>': {
-                lex = ch;
-                std::string tmpLex{ peekChar(0) };
+                case '-': {
+                    tok = sub_tk;
 
-                if (tmpLex == "=") {
-                    lex += tmpLex;
-                    getChar();
-                    getChar();
-                    return Lexem(std::move(lex), mequ_tk, line);
-                } else {
-                    tok = more_tk;
-                    getChar(); // some kind of k o s t y l; here we look on \n
-                    return Lexem(std::move(lex), tok, line);
+                    break;
                 }
 
-                break;
-            }
+                case '>': {
+                    lex = ch;
+                    std::string tmpLex{ peekChar(0) };
 
-            case '<': {
-                lex = ch;
-                std::string tmpLex{ peekChar(0) };
+                    if (tmpLex == "=") {
+                        lex += tmpLex;
+                        getChar();
+                        getChar();
+                        return Lexem(std::move(lex), mequ_tk, line);
+                    } else {
+                        tok = more_tk;
+                        getChar(); // some kind of k o s t y l; here we look on \n
+                        return Lexem(std::move(lex), tok, line);
+                    }
 
-                if (tmpLex == "=") {
-                    lex += tmpLex;
-                    getChar();
-                    getChar();
-                    return Lexem(std::move(lex), lequ_tk, line);
-                } else if (tmpLex == ">") {
-                    lex += tmpLex;
-                    getChar();
-                    getChar();
-                    return Lexem(std::move(lex), newton_tk, line);
-                } else {
-                    tok = less_tk;
-                    getChar(); // some kind of k o s t y l; here we look on \n
-                    return Lexem(std::move(lex), tok, line);
+                    break;
                 }
 
-                break;
-            }
+                case '<': {
+                    lex = ch;
+                    std::string tmpLex{ peekChar(0) };
 
-            default: {
-                std::cerr << "<E> Unknown token " << ch << std::endl;
-                tok = unknown_tk;
-                break;
-            }
+                    if (tmpLex == "=") {
+                        lex += tmpLex;
+                        getChar();
+                        getChar();
+                        return Lexem(std::move(lex), lequ_tk, line);
+                    } else if (tmpLex == ">") {
+                        lex += tmpLex;
+                        getChar();
+                        getChar();
+                        return Lexem(std::move(lex), newton_tk, line);
+                    } else {
+                        tok = less_tk;
+                        getChar(); // some kind of k o s t y l; here we look on \n
+                        return Lexem(std::move(lex), tok, line);
+                    }
+
+                    break;
+                }
+
+                default: {
+                    std::cerr << "<E> Unknown token " << ch << std::endl;
+                    tok = unknown_tk;
+                    break;
+                }
 
             }
 

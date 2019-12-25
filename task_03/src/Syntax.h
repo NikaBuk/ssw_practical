@@ -35,7 +35,6 @@ private:
     lex_it getNextLex(lex_it &iter);
     lex_it peekLex(int N, lex_it t_iter);
 
-
     int   expressionParse            (lex_it &t_iter, Tree **tree);
     Tree  *simplExprParse            (lex_it &var_iter, lex_it &t_iter,
                                       Tree *tree);
@@ -44,6 +43,8 @@ private:
                                       Tree** tree);
 
     Tree* Find_$_end_remove_tree(Tree *tree);
+
+    Tree* Find_$_end(Tree *tree);
     Tree* boolExprParse              (lex_it& t_iter, Tree* tree);//???
 
     Tree* stateParse                 (lex_it &t_iter, const std::string& opValue);
@@ -59,9 +60,16 @@ private:
     void updateVarTypes(const std::list<std::string> &t_var_list,
                         const std::string &t_type_name);
 
-    //void updateVarValue(const std::string& name, const std::string& value);
-    void updateVarValue(const std::string& name, const std::string& value, int& firstValue,int& secondValue);
+    void updateVarValue_for_arr(const std::list<std::string> &t_var_list, Tree* tree);
+    void updateVarValue_for_vars(const std::list<std::string> &t_var_list,
+                                 const std::string& value);
+    void updateVarValue(const std::list<std::string> &t_var_list,
+                        const std::string& value, int& firstValue, int& secondValue);
     void buildVarTree  (const std::list<std::string> &t_var_list, Tree *t_tree);
+    void buildVarTree_for_arr_with_val  (const std::list<std::string> &t_var_list,
+                                         Tree *t_tree, Tree * tree_init);
+    Tree* createTreeForValueArrs(Tree* tree, int fir, int sec, int &counter,
+                                 lex_it &iter);
 
     void createVarTree(Tree *t_tree, Tree *t_donor_tree, int lvl);
     Tree* createLowestOpTree(Tree *t_parent_tree, std::string value);

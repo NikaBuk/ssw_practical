@@ -52,6 +52,8 @@ enum tokens {
     osb_tk,             // '['
     csb_tk,             // ']'
     break_tk,           // 'break'
+    bracel_tk,          // '{'
+    bracer_tk,          // '}'
 
     eof_tk              // end of file
 };
@@ -77,7 +79,10 @@ enum errors {
     WRONG_TYPE_MUST_BE_INTEGER, //ERROR: ERROR TYPE MUST BE INTEGER
     MUST_BE_THEN,           //ERROR: MUST BE 'THEN'
     MUST_BE_OPERATOR_GE_OR_LE,  //ERROR: MUST BE '<=' OR '>='
-    MUST_BE_DO			//ERROR: MUST BE 'DO'
+    MUST_BE_CONSTANT,       //ERROR: MYST BE CONSTANT
+    WRONG_INIT,             //WROND INIT ARRAY - invalid array initialization
+    MUST_BE_BRACER,         //MUST BE BRACER
+    MUST_BE_DO          //ERROR: MUST BE 'DO'
 };
 
 
