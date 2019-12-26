@@ -82,6 +82,9 @@ enum errors {
     MUST_BE_CONSTANT,       //ERROR: MYST BE CONSTANT
     WRONG_INIT,             //WROND INIT ARRAY - invalid array initialization
     MUST_BE_BRACER,         //MUST BE BRACER
+    MUST_BE_CPB,         //MUST BE ')'
+    WRONG_USE_ARRAY,     //MUST BE ID INSTEAD ARRAY
+    WRONG_USE_ID,        //MUST BE ARRAY INSTEAD ID
     MUST_BE_DO          //ERROR: MUST BE 'DO'
 };
 

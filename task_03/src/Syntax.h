@@ -35,12 +35,11 @@ private:
     lex_it getNextLex(lex_it &iter);
     lex_it peekLex(int N, lex_it t_iter);
 
-    int   expressionParse            (lex_it &t_iter, Tree **tree);
+    int   expressionParse            (lex_it &t_iter, Tree *tree);
     Tree  *simplExprParse            (lex_it &var_iter, lex_it &t_iter,
                                       Tree *tree);
 
-    Tree  *simplExprParseForTree     (Tree* treeCPB, lex_it &t_iter,
-                                      Tree** tree);
+    Tree  *simplExprParseForTree     (Tree* treeCPB, lex_it &t_iter, Tree* tree);
 
     Tree* Find_$_end_remove_tree(Tree *tree);
 
